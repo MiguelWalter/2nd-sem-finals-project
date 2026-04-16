@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>NEBULA HELL | Bullet Hell Game</title>
+    <title>STAR RANGER | Bullet Hell Game</title>
     <style>
         * {
             margin: 0;
@@ -112,7 +112,7 @@
             box-shadow: 0 0 12px cyan;
             transform: scale(1.02);
         }
-        /* Bottom panel: Controls + Download + (no team) */
+        /* Bottom panel: Controls + Download */
         .bottom-panel {
             background: rgba(0, 0, 0, 0.5);
             border-radius: 1.8rem;
@@ -204,7 +204,7 @@
 <div class="container">
     <div class="landing-card">
         <div class="game-title">
-            <h1>⚡ NEBULA HELL ⚡</h1>
+            <h1>⭐ STAR RANGER ⭐</h1>
             <div class="tagline">「 bullet hell · 微小 hitbox · 狂気の弾幕 」</div>
         </div>
 
@@ -219,7 +219,7 @@
             </div>
         </div>
 
-        <!-- CONTROLS + DOWNLOAD under the game (team section removed) -->
+        <!-- CONTROLS + DOWNLOAD under the game -->
         <div class="bottom-panel">
             <div class="controls-box">
                 <h3>🎮 CONTROLS & RULES</h3>
@@ -235,7 +235,7 @@
             <div class="download-area">
                 <button id="fakeDownloadBtn" class="btn">💾 DOWNLOAD PC BUILD</button>
                 <button id="playNowBtn" class="btn">🎮 PLAY FULLSCREEN</button>
-                <div style="font-size:0.7rem; color:#88aaff;">⚡ No team — pure arcade chaos ⚡</div>
+                <div style="font-size:0.7rem; color:#88aaff;">⚡ Star Ranger — elite bullet hell ⚡</div>
             </div>
         </div>
         <div class="footer">
@@ -252,7 +252,7 @@
         // Game states: 'menu', 'active', 'gameOver'
         let gameState = 'menu';
         let score = 0;
-        let highScore = localStorage.getItem('bulletHellHigh') ? parseInt(localStorage.getItem('bulletHellHigh')) : 0;
+        let highScore = localStorage.getItem('starRangerHigh') ? parseInt(localStorage.getItem('starRangerHigh')) : 0;
         
         // Player settings: tiny hitbox = 3px radius (true bullet hell)
         let player = { x: canvas.width/2, y: canvas.height - 80, radius: 3 };
@@ -275,7 +275,7 @@
         function setHighScore() {
             if (score > highScore) {
                 highScore = score;
-                localStorage.setItem('bulletHellHigh', highScore);
+                localStorage.setItem('starRangerHigh', highScore);
                 updateUI();
             }
         }
@@ -467,7 +467,7 @@
             ctx.font = '900 48px "Segoe UI", "Poppins"';
             ctx.fillStyle = '#0ff';
             ctx.shadowColor = '#0ff';
-            ctx.fillText('☠️ NEBULA HELL ☠️', canvas.width/2 - 230, 160);
+            ctx.fillText('⭐ STAR RANGER ⭐', canvas.width/2 - 210, 160);
             ctx.font = 'bold 28px monospace';
             ctx.fillStyle = '#f0f';
             ctx.fillText('» bullet hell gauntlet «', canvas.width/2 - 190, 250);
