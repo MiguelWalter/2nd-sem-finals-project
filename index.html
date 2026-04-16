@@ -51,7 +51,6 @@
             font-style: italic;
             margin-top: -0.5rem;
         }
-        /* GAME ZONE - now full width and prominent */
         .game-zone {
             width: 100%;
             margin-bottom: 1.8rem;
@@ -72,7 +71,6 @@
             cursor: none;
             background: #03030f;
         }
-        /* Score and restart bar below canvas */
         .game-bar {
             display: flex;
             justify-content: space-between;
@@ -90,6 +88,38 @@
             font-size: 1.2rem;
             border: 1px solid cyan;
             backdrop-filter: blur(4px);
+        }
+        .health-bar-container {
+            background: #330000aa;
+            border-radius: 20px;
+            padding: 4px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid #ff6666;
+            backdrop-filter: blur(4px);
+        }
+        .health-label {
+            color: #ffaaaa;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .health-icons {
+            display: flex;
+            gap: 8px;
+        }
+        .health-heart {
+            font-size: 1.6rem;
+            transition: all 0.1s ease;
+        }
+        .health-heart.active {
+            color: #ff3366;
+            text-shadow: 0 0 6px #ff3366;
+        }
+        .health-heart.lost {
+            color: #442222;
+            filter: grayscale(0.5);
+            opacity: 0.5;
         }
         .btn {
             background: linear-gradient(95deg, #0a0f2a, #001d3d);
@@ -112,7 +142,6 @@
             box-shadow: 0 0 12px cyan;
             transform: scale(1.02);
         }
-        /* Bottom panel: Controls + Download */
         .bottom-panel {
             background: rgba(0, 0, 0, 0.5);
             border-radius: 1.8rem;
@@ -192,6 +221,9 @@
             .game-title h1 {
                 font-size: 2.5rem;
             }
+            .health-heart {
+                font-size: 1.2rem;
+            }
         }
         button {
             background: none;
@@ -205,41 +237,47 @@
     <div class="landing-card">
         <div class="game-title">
             <h1>⭐ STAR RANGER ⭐</h1>
-            <div class="tagline">「 bullet hell · 微小 hitbox · 狂気の弾幕 」</div>
+            <div class="tagline">「 bullet hell · 3-hit survival · 狂気の弾幕 」</div>
         </div>
 
-        <!-- GAME ZONE - BIGGER AND CENTERED -->
         <div class="game-zone">
             <div class="canvas-wrapper">
                 <canvas id="gameCanvas" width="1000" height="650" class="game-canvas" style="width:100%;height:auto;aspect-ratio:1000/650"></canvas>
             </div>
             <div class="game-bar">
                 <div class="score-badge" id="externalScore">⭐ SCORE: 0</div>
-                <button id="resetGameBtn" class="btn">🔄 RESTART GAME</button>
+                <div class="health-bar-container" id="healthBarUI">
+                    <span class="health-label">🛡️ ARMOR</span>
+                    <div class="health-icons" id="healthIcons">
+                        <span class="health-heart active">❤️</span>
+                        <span class="health-heart active">❤️</span>
+                        <span class="health-heart active">❤️</span>
+                    </div>
+                </div>
+                <button id="resetGameBtn" class="btn">🔄 RESTART</button>
             </div>
         </div>
 
-        <!-- CONTROLS + DOWNLOAD under the game -->
         <div class="bottom-panel">
             <div class="controls-box">
                 <h3>🎮 CONTROLS & RULES</h3>
                 <ul class="instructions-list">
                     <li><span class="key-icon">🖱️ MOUSE</span> → Move your ship (tiny hitbox = center dot)</li>
                     <li><span class="key-icon">💥 AUTO</span> → Continuous laser stream</li>
-                    <li><span class="key-icon">❤️ 1 HIT</span> → Death — survive impossible patterns</li>
+                    <li><span class="key-icon">❤️ 3 HITS</span> → You have 3 hearts! Each bullet = 1 damage</li>
                     <li><span class="key-icon">✨ +10</span> → Points per enemy kill</li>
                     <li><span class="key-icon">🌀 WAVE</span> → Projectiles accelerate — true bullet hell</li>
-                    <li><span class="key-icon">🎯 HITBOX</span> → Only 3px red core (precision matter)</li>
+                    <li><span class="key-icon">🎯 INVINCIBLE</span> → 0.8 sec after hit (blink effect)</li>
                 </ul>
             </div>
             <div class="download-area">
                 <button id="fakeDownloadBtn" class="btn">💾 DOWNLOAD PC BUILD</button>
                 <button id="playNowBtn" class="btn">🎮 PLAY FULLSCREEN</button>
-                <div style="font-size:0.7rem; color:#88aaff;">⚡ Star Ranger — elite bullet hell ⚡</div>
+                <div style="font-size:0.7rem; color:#88aaff;">⚡ 3-hit system — survive longer ⚡</div>
             </div>
         </div>
         <div class="footer">
-            <span>⚠️ PRECISION MODE: your hitbox is the central 🔴 3px 🔴 — dodge pixel-perfect gaps! Press [R] to restart, [ESC] to menu.</span>
+            <span>⚠️ 3 HITS BEFORE GAME OVER | blink after hit | Press [R] restart, [ESC] menu.</span>
         </div>
     </div>
 </div>
@@ -249,27 +287,42 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Game states: 'menu', 'active', 'gameOver'
-        let gameState = 'menu';
+        // Game states
+        let gameState = 'menu'; // menu, active, gameOver
         let score = 0;
         let highScore = localStorage.getItem('starRangerHigh') ? parseInt(localStorage.getItem('starRangerHigh')) : 0;
         
-        // Player settings: tiny hitbox = 3px radius (true bullet hell)
-        let player = { x: canvas.width/2, y: canvas.height - 80, radius: 3 };
+        // NEW: HP System (3 hits)
+        let playerHp = 3;
+        let invincibleFrames = 0;      // frames after hit (0 = vulnerable)
+        const INVINCIBLE_DURATION = 48; // ~0.8 seconds at 60fps
+        
+        // Player: tiny hitbox = 4px for better forgiveness but still intense
+        let player = { x: canvas.width/2, y: canvas.height - 80, radius: 4 };
         let enemies = [];
         let bullets = [];        // player bullets
         let enemyBullets = [];
         let frame = 0;
         let enemySpawnCounter = 0;
         let mouseX = canvas.width/2, mouseY = canvas.height - 80;
-        
-        // Difficulty scaling
         let waveMod = 1;
         
-        // UI update helper
+        // Helper: Update UI (score + health hearts)
         function updateUI() {
             const extScore = document.getElementById('externalScore');
             if (extScore) extScore.innerHTML = `⭐ SCORE: ${score}  |  🏆 BEST: ${highScore}`;
+            
+            // Update heart icons
+            const hearts = document.querySelectorAll('.health-heart');
+            for (let i = 0; i < hearts.length; i++) {
+                if (i < playerHp) {
+                    hearts[i].classList.add('active');
+                    hearts[i].classList.remove('lost');
+                } else {
+                    hearts[i].classList.remove('active');
+                    hearts[i].classList.add('lost');
+                }
+            }
         }
         
         function setHighScore() {
@@ -280,9 +333,11 @@
             }
         }
         
-        // Full game reset
+        // Full game reset (keeps HP at 3)
         function resetGame() {
             score = 0;
+            playerHp = 3;
+            invincibleFrames = 0;
             enemies = [];
             bullets = [];
             enemyBullets = [];
@@ -290,13 +345,32 @@
             enemySpawnCounter = 8;
             waveMod = 1;
             gameState = 'active';
-            // keep player inside bounds (updated for bigger canvas)
-            player.x = Math.min(canvas.width - 18, Math.max(18, mouseX));
-            player.y = Math.min(canvas.height - 40, Math.max(50, mouseY));
+            player.x = Math.min(canvas.width - 20, Math.max(20, mouseX));
+            player.y = Math.min(canvas.height - 45, Math.max(50, mouseY));
             updateUI();
         }
         
-        // Spawn enemy (with visual variety)
+        // Damage handler with invincibility frames
+        function damagePlayer() {
+            if (invincibleFrames > 0) return false; // invincible
+            if (playerHp <= 0) return false;
+            
+            playerHp--;
+            updateUI();
+            
+            if (playerHp <= 0) {
+                // Game Over
+                gameState = 'gameOver';
+                setHighScore();
+                return true; // death
+            } else {
+                // Trigger invincibility frames
+                invincibleFrames = INVINCIBLE_DURATION;
+                return false; // damaged but alive
+            }
+        }
+        
+        // Spawn enemy
         function spawnEnemy() {
             let type = Math.random() < 0.7 ? 'normal' : 'fast';
             let x = 25 + Math.random() * (canvas.width - 50);
@@ -307,19 +381,17 @@
             enemies.push({ x, y, radius, hp: 1, color, speedY, type });
         }
         
-        // Enemy shooting patterns: bullet hell style!
+        // Enemy shooting patterns (bullet hell)
         function enemyShootPattern(e, currentFrame) {
             let cx = e.x, cy = e.y;
             let pattern = (Math.floor(currentFrame / 15) % 2 === 0) ? 'spread' : 'aim';
             
             if (pattern === 'spread') {
-                // 5-way spread
                 for (let ang = -0.9; ang <= 0.91; ang += 0.45) {
                     let dx = Math.sin(ang) * 3.2;
                     let dy = Math.cos(ang) * 2.3 + 1.2;
                     enemyBullets.push({ x: cx, y: cy, radius: 4.5, vx: dx, vy: dy });
                 }
-                // extra dense for hard mode
                 if (waveMod >= 2) {
                     for (let ang = -0.6; ang <= 0.61; ang += 0.6) {
                         let dx = Math.sin(ang) * 4.5;
@@ -328,7 +400,6 @@
                     }
                 }
             } else {
-                // aimed shot at player + slight spread
                 let dx = player.x - cx;
                 let dy = player.y - cy;
                 let len = Math.hypot(dx, dy);
@@ -336,12 +407,10 @@
                 dx *= 4.5;
                 dy *= 4.2;
                 enemyBullets.push({ x: cx, y: cy, radius: 4.5, vx: dx + (Math.random() - 0.5) * 0.9, vy: dy + 0.8 });
-                // additional aimed small bullet for fast type
                 if (e.type === 'fast') {
                     enemyBullets.push({ x: cx, y: cy, radius: 3.5, vx: dx * 0.9 + (Math.random() - 0.5)*0.7, vy: dy * 0.9 + 0.5 });
                 }
             }
-            // extra ring if score high (bullet hell climax)
             if (score > 350 && (currentFrame % 28 === 0)) {
                 for (let a = 0; a < 10; a++) {
                     let angle = (a / 10) * Math.PI * 2;
@@ -352,7 +421,6 @@
             }
         }
         
-        // Player auto-fire (stream)
         function shootPlayer() {
             bullets.push({ x: player.x, y: player.y - 6, radius: 4, vx: 0, vy: -8 });
         }
@@ -363,12 +431,15 @@
             
             frame++;
             
-            // Auto-fire: fast rate
+            // Decrease invincibility frames
+            if (invincibleFrames > 0) invincibleFrames--;
+            
+            // Auto-fire
             if (frame % 4 === 0 || frame % 3 === 0) {
                 shootPlayer();
             }
             
-            // Enemy spawn logic
+            // Enemy spawn
             if (enemySpawnCounter <= 0) {
                 spawnEnemy();
                 let spawnDelay = Math.max(16, 30 - Math.floor(score / 180));
@@ -377,7 +448,7 @@
                 enemySpawnCounter--;
             }
             
-            // Update enemies
+            // Update enemies + shooting
             for (let i = 0; i < enemies.length; i++) {
                 let e = enemies[i];
                 e.y += e.speedY;
@@ -392,7 +463,7 @@
                 }
             }
             
-            // Update player bullets & collisions
+            // Player bullets vs enemies
             for (let i = 0; i < bullets.length; i++) {
                 let b = bullets[i];
                 b.x += b.vx;
@@ -422,7 +493,7 @@
                 }
             }
             
-            // Update enemy bullets + collision with player (tiny hitbox)
+            // Enemy bullets collision (with HP & invincibility)
             for (let i = 0; i < enemyBullets.length; i++) {
                 let eb = enemyBullets[i];
                 eb.x += eb.vx;
@@ -436,27 +507,32 @@
                 let dy = player.y - eb.y;
                 let dist = Math.hypot(dx, dy);
                 if (dist < player.radius + eb.radius) {
-                    if (gameState === 'active') {
-                        gameState = 'gameOver';
-                        setHighScore();
+                    // HIT! apply damage
+                    const died = damagePlayer();
+                    // remove the bullet that hit
+                    enemyBullets.splice(i,1);
+                    i--;
+                    if (died) {
+                        // gameState already set to gameOver inside damagePlayer if hp<=0
                         return;
                     }
+                    // small knockback / visual effect (no extra action)
+                    continue;
                 }
             }
             
             // Update player position from mouse
-            player.x = Math.min(canvas.width - 18, Math.max(18, mouseX));
-            player.y = Math.min(canvas.height - 40, Math.max(45, mouseY));
+            player.x = Math.min(canvas.width - 20, Math.max(20, mouseX));
+            player.y = Math.min(canvas.height - 45, Math.max(50, mouseY));
             
-            // Dynamic difficulty
+            // Difficulty scaling
             waveMod = 1 + Math.floor(score / 350);
         }
         
-        // ---------- DRAWING FUNCTIONS ----------
+        // ---------- DRAWING (with invincibility blink) ----------
         function drawMenu() {
             ctx.fillStyle = '#030318';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            // animated background particles
             for (let i = 0; i < 200; i++) {
                 ctx.fillStyle = `hsl(${Date.now() * 0.02 + i * 4}, 75%, 60%)`;
                 ctx.beginPath();
@@ -473,9 +549,8 @@
             ctx.fillText('» bullet hell gauntlet «', canvas.width/2 - 190, 250);
             ctx.font = '20px "Segoe UI"';
             ctx.fillStyle = '#bbddff';
-            ctx.fillText('⚡ mouse to move | auto laser | 3px hitbox ⚡', canvas.width/2 - 310, 340);
+            ctx.fillText('⚡ mouse to move | 3 hits | auto laser ⚡', canvas.width/2 - 310, 340);
             
-            // Start button (bigger)
             let btnW = 260, btnH = 65;
             let btnX = canvas.width/2 - btnW/2;
             let btnY = 390;
@@ -486,7 +561,7 @@
             ctx.fillText('▶ START GAME', canvas.width/2 - 98, btnY + 44);
             ctx.fillStyle = '#fff9c0';
             ctx.font = '18px monospace';
-            ctx.fillText('survive the impossible patterns', canvas.width/2 - 175, 530);
+            ctx.fillText('survive with 3 hearts', canvas.width/2 - 155, 530);
             ctx.fillStyle = '#88aaff';
             ctx.font = '16px monospace';
             ctx.fillText('🏆 HIGHSCORE: '+highScore, canvas.width/2 - 90, 590);
@@ -535,7 +610,7 @@
         function drawGame() {
             ctx.fillStyle = '#050510';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            // stars
+            // Stars
             for (let i = 0; i < 280; i++) {
                 ctx.fillStyle = `rgba(255,255,210,${0.4+Math.sin(frame*0.02+i)*0.2})`;
                 ctx.beginPath();
@@ -543,7 +618,7 @@
                 ctx.fill();
             }
             
-            // enemy bullets
+            // Enemy bullets
             for (let eb of enemyBullets) {
                 ctx.beginPath();
                 ctx.arc(eb.x, eb.y, eb.radius-1, 0, Math.PI*2);
@@ -558,7 +633,7 @@
             }
             ctx.shadowBlur = 0;
             
-            // enemies
+            // Enemies
             for (let e of enemies) {
                 ctx.shadowBlur = 7;
                 ctx.shadowColor = '#ff2060';
@@ -575,7 +650,7 @@
                 ctx.fillText('⚔', e.x-8, e.y+6);
             }
             
-            // player bullets
+            // Player bullets
             for (let b of bullets) {
                 ctx.beginPath();
                 ctx.arc(b.x, b.y, 4.5, 0, Math.PI*2);
@@ -587,32 +662,38 @@
                 ctx.fill();
             }
             
-            // Player ship: tiny hitbox + crosshair
-            ctx.shadowBlur = 0;
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.radius+2.5, 0, Math.PI*2);
-            ctx.fillStyle = '#88ddffaa';
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
-            ctx.fillStyle = '#0ff';
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, 2, 0, Math.PI*2);
-            ctx.fillStyle = 'white';
-            ctx.fill();
-            ctx.beginPath();
-            ctx.moveTo(player.x-11, player.y);
-            ctx.lineTo(player.x+11, player.y);
-            ctx.moveTo(player.x, player.y-11);
-            ctx.lineTo(player.x, player.y+11);
-            ctx.strokeStyle = '#0ff';
-            ctx.lineWidth = 1.8;
-            ctx.stroke();
-            ctx.fillStyle = 'red';
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, 1.8, 0, Math.PI*2);
-            ctx.fill();
+            // Player drawing with invincibility blink (alternate alpha)
+            let drawPlayer = true;
+            if (invincibleFrames > 0 && (Math.floor(Date.now() / 50) % 3 === 0)) {
+                drawPlayer = false; // blinking effect
+            }
+            if (drawPlayer) {
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.radius+2.5, 0, Math.PI*2);
+                ctx.fillStyle = '#88ddffaa';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
+                ctx.fillStyle = '#0ff';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, 2, 0, Math.PI*2);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(player.x-11, player.y);
+                ctx.lineTo(player.x+11, player.y);
+                ctx.moveTo(player.x, player.y-11);
+                ctx.lineTo(player.x, player.y+11);
+                ctx.strokeStyle = '#0ff';
+                ctx.lineWidth = 1.8;
+                ctx.stroke();
+                ctx.fillStyle = 'red';
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, 1.8, 0, Math.PI*2);
+                ctx.fill();
+            }
             
             ctx.fillStyle = '#aaf';
             ctx.font = 'bold 26px "Segoe UI"';
@@ -620,6 +701,11 @@
             ctx.fillStyle = '#0ff';
             ctx.font = 'bold 18px monospace';
             ctx.fillText(`HELL LVL ${Math.floor(waveMod)}`, canvas.width-140, 55);
+            
+            // Draw HP text on canvas too (extra)
+            ctx.fillStyle = '#ffaaaa';
+            ctx.font = 'bold 18px monospace';
+            ctx.fillText(`❤️ x${playerHp}`, canvas.width-100, 110);
         }
         
         function render() {
@@ -634,14 +720,15 @@
             setTimeout(() => requestAnimationFrame(gameLoop), 16);
         }
         
+        // Event handlers
         function handleMouseMove(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
             let rawX = (e.clientX - rect.left) * scaleX;
             let rawY = (e.clientY - rect.top) * scaleY;
-            mouseX = Math.min(canvas.width - 15, Math.max(15, rawX));
-            mouseY = Math.min(canvas.height - 45, Math.max(50, rawY));
+            mouseX = Math.min(canvas.width - 20, Math.max(20, rawX));
+            mouseY = Math.min(canvas.height - 50, Math.max(50, rawY));
             if (gameState === 'active') {
                 player.x = mouseX;
                 player.y = mouseY;
@@ -695,7 +782,7 @@
         });
         document.getElementById('fakeDownloadBtn').addEventListener('click', (e) => {
             e.preventDefault();
-            alert('📀 PC Build (Windows/Mac) coming soon! For now enjoy the full bullet hell web demo.');
+            alert('📀 PC Build (Windows/Mac) coming soon! 3-hit survival mode active.');
         });
         
         canvas.addEventListener('mousemove', handleMouseMove);
