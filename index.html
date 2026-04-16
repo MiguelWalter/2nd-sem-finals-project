@@ -21,14 +21,14 @@
             padding: 2rem;
         }
         .container {
-            max-width: 1300px;
+            max-width: 1200px;
             width: 100%;
         }
         .landing-card {
             background: rgba(5, 7, 20, 0.75);
             backdrop-filter: blur(12px);
             border-radius: 3rem;
-            padding: 1.8rem;
+            padding: 2rem;
             border: 1px solid rgba(0, 255, 255, 0.3);
             box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 255, 255, 0.2);
         }
@@ -51,22 +51,10 @@
             font-style: italic;
             margin-top: -0.5rem;
         }
-        .two-columns {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 2rem;
-        }
+        /* GAME ZONE - now full width and prominent */
         .game-zone {
-            flex: 2;
-            min-width: 280px;
-        }
-        .info-panel {
-            flex: 1;
-            min-width: 220px;
-            background: rgba(0, 0, 0, 0.6);
-            border-radius: 2rem;
-            padding: 1.2rem;
-            border: 1px solid rgba(0, 255, 255, 0.4);
+            width: 100%;
+            margin-bottom: 1.8rem;
         }
         .canvas-wrapper {
             background: #000;
@@ -84,45 +72,29 @@
             cursor: none;
             background: #03030f;
         }
-        .instructions {
-            padding: 1rem 0 0.5rem;
-        }
-        .instructions h3 {
-            color: #0ff;
-            margin-bottom: 0.8rem;
-            border-left: 4px solid #f0f;
-            padding-left: 12px;
-        }
-        .instructions ul {
-            list-style: none;
-        }
-        .instructions li {
-            margin: 8px 0;
-            color: #ccd6ff;
+        /* Score and restart bar below canvas */
+        .game-bar {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
-        }
-        .key-icon {
-            background: #1a1f3a;
-            border-radius: 8px;
-            padding: 4px 10px;
-            font-weight: bold;
-            font-family: monospace;
-            border: 1px solid cyan;
-            color: #0ff;
-            font-size: 0.8rem;
-        }
-        .download-links {
-            display: flex;
-            gap: 1rem;
-            margin: 1rem 0;
+            margin-top: 1rem;
             flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .score-badge {
+            background: #000000aa;
+            border-radius: 40px;
+            padding: 8px 20px;
+            font-weight: bold;
+            color: #0ff;
+            font-size: 1.2rem;
+            border: 1px solid cyan;
+            backdrop-filter: blur(4px);
         }
         .btn {
             background: linear-gradient(95deg, #0a0f2a, #001d3d);
             border: 1px solid cyan;
-            padding: 10px 20px;
+            padding: 10px 24px;
             border-radius: 60px;
             color: white;
             font-weight: bold;
@@ -132,6 +104,7 @@
             align-items: center;
             gap: 8px;
             cursor: pointer;
+            font-size: 1rem;
         }
         .btn:hover {
             background: #0ff;
@@ -139,20 +112,86 @@
             box-shadow: 0 0 12px cyan;
             transform: scale(1.02);
         }
-        .score-badge {
-            background: #000000aa;
-            border-radius: 40px;
-            padding: 6px 15px;
-            display: inline-block;
-            margin-top: 12px;
-            font-weight: bold;
+        /* Bottom panel: Controls + Download + (no team) */
+        .bottom-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 1.8rem;
+            padding: 1.5rem;
+            margin-top: 0.5rem;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .controls-box {
+            flex: 2;
+            min-width: 240px;
+        }
+        .controls-box h3 {
             color: #0ff;
+            margin-bottom: 1rem;
+            border-left: 4px solid #f0f;
+            padding-left: 12px;
+            font-size: 1.4rem;
+        }
+        .instructions-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.6rem;
+        }
+        .instructions-list li {
+            color: #ccd6ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+        }
+        .key-icon {
+            background: #1a1f3a;
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-weight: bold;
+            font-family: monospace;
+            border: 1px solid cyan;
+            color: #0ff;
+            font-size: 0.75rem;
+        }
+        .download-area {
+            flex: 1;
+            min-width: 200px;
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+        .download-area .btn {
+            width: 100%;
+            justify-content: center;
+            text-align: center;
         }
         .footer {
             text-align: center;
             margin-top: 1.8rem;
             font-size: 0.7rem;
             color: #669;
+        }
+        @media (max-width: 700px) {
+            .bottom-panel {
+                flex-direction: column;
+            }
+            .download-area {
+                align-items: stretch;
+            }
+            .instructions-list {
+                grid-template-columns: 1fr;
+            }
+            .game-title h1 {
+                font-size: 2.5rem;
+            }
         }
         button {
             background: none;
@@ -168,35 +207,39 @@
             <h1>⚡ NEBULA HELL ⚡</h1>
             <div class="tagline">「 bullet hell · 微小 hitbox · 狂気の弾幕 」</div>
         </div>
-        <div class="two-columns">
-            <div class="game-zone">
-                <div class="canvas-wrapper">
-                    <canvas id="gameCanvas" width="900" height="600" class="game-canvas" style="width:100%;height:auto;aspect-ratio:900/600"></canvas>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; flex-wrap:wrap">
-                    <div class="score-badge" id="externalScore">⭐ SCORE: 0</div>
-                    <button id="resetGameBtn" class="btn" style="padding:6px 16px">🔄 RESTART</button>
-                </div>
+
+        <!-- GAME ZONE - BIGGER AND CENTERED -->
+        <div class="game-zone">
+            <div class="canvas-wrapper">
+                <canvas id="gameCanvas" width="1000" height="650" class="game-canvas" style="width:100%;height:auto;aspect-ratio:1000/650"></canvas>
             </div>
-            <div class="info-panel">
-                <div class="instructions">
-                    <h3>🎮 CONTROLS & RULES</h3>
-                    <ul>
-                        <li>🖱️ <strong>MOUSE</strong> → move your ship (tiny hitbox = center dot)</li>
-                        <li>💥 <strong>AUTO-FIRE</strong> → continuous laser stream</li>
-                        <li>❤️ <strong>1 hit = death</strong> → survive the impossible patterns</li>
-                        <li>✨ <strong>+10 points</strong> per enemy kill</li>
-                        <li>🌀 projectiles accelerate in waves — true bullet hell</li>
-                    </ul>
-                    <div class="download-links">
-                        <button class="btn" id="fakeDownloadBtn">💾 DOWNLOAD PC BUILD</button>
-                        <button class="btn" id="playNowBtn">🎮 PLAY FULLSCREEN</button>
-                    </div>
-                </div>
+            <div class="game-bar">
+                <div class="score-badge" id="externalScore">⭐ SCORE: 0</div>
+                <button id="resetGameBtn" class="btn">🔄 RESTART GAME</button>
+            </div>
+        </div>
+
+        <!-- CONTROLS + DOWNLOAD under the game (team section removed) -->
+        <div class="bottom-panel">
+            <div class="controls-box">
+                <h3>🎮 CONTROLS & RULES</h3>
+                <ul class="instructions-list">
+                    <li><span class="key-icon">🖱️ MOUSE</span> → Move your ship (tiny hitbox = center dot)</li>
+                    <li><span class="key-icon">💥 AUTO</span> → Continuous laser stream</li>
+                    <li><span class="key-icon">❤️ 1 HIT</span> → Death — survive impossible patterns</li>
+                    <li><span class="key-icon">✨ +10</span> → Points per enemy kill</li>
+                    <li><span class="key-icon">🌀 WAVE</span> → Projectiles accelerate — true bullet hell</li>
+                    <li><span class="key-icon">🎯 HITBOX</span> → Only 3px red core (precision matter)</li>
+                </ul>
+            </div>
+            <div class="download-area">
+                <button id="fakeDownloadBtn" class="btn">💾 DOWNLOAD PC BUILD</button>
+                <button id="playNowBtn" class="btn">🎮 PLAY FULLSCREEN</button>
+                <div style="font-size:0.7rem; color:#88aaff;">⚡ No team — pure arcade chaos ⚡</div>
             </div>
         </div>
         <div class="footer">
-            <span>⚠️ PRECISION MODE: your hitbox is the central 🔴 3px 🔴 — dodge pixel-perfect gaps!</span>
+            <span>⚠️ PRECISION MODE: your hitbox is the central 🔴 3px 🔴 — dodge pixel-perfect gaps! Press [R] to restart, [ESC] to menu.</span>
         </div>
     </div>
 </div>
@@ -212,13 +255,13 @@
         let highScore = localStorage.getItem('bulletHellHigh') ? parseInt(localStorage.getItem('bulletHellHigh')) : 0;
         
         // Player settings: tiny hitbox = 3px radius (true bullet hell)
-        let player = { x: canvas.width/2, y: canvas.height - 70, radius: 3 };
+        let player = { x: canvas.width/2, y: canvas.height - 80, radius: 3 };
         let enemies = [];
         let bullets = [];        // player bullets
         let enemyBullets = [];
         let frame = 0;
         let enemySpawnCounter = 0;
-        let mouseX = canvas.width/2, mouseY = canvas.height - 70;
+        let mouseX = canvas.width/2, mouseY = canvas.height - 80;
         
         // Difficulty scaling
         let waveMod = 1;
@@ -247,18 +290,18 @@
             enemySpawnCounter = 8;
             waveMod = 1;
             gameState = 'active';
-            // keep player inside bounds
-            player.x = Math.min(canvas.width - 15, Math.max(15, mouseX));
-            player.y = Math.min(canvas.height - 30, Math.max(40, mouseY));
+            // keep player inside bounds (updated for bigger canvas)
+            player.x = Math.min(canvas.width - 18, Math.max(18, mouseX));
+            player.y = Math.min(canvas.height - 40, Math.max(50, mouseY));
             updateUI();
         }
         
         // Spawn enemy (with visual variety)
         function spawnEnemy() {
             let type = Math.random() < 0.7 ? 'normal' : 'fast';
-            let x = 20 + Math.random() * (canvas.width - 40);
-            let y = -25;
-            let radius = 12;
+            let x = 25 + Math.random() * (canvas.width - 50);
+            let y = -30;
+            let radius = 14;
             let color = type === 'normal' ? '#ff3a6f' : '#ffaa44';
             let speedY = type === 'normal' ? 1.8 + waveMod * 0.6 : 3.2 + waveMod * 0.5;
             enemies.push({ x, y, radius, hp: 1, color, speedY, type });
@@ -267,22 +310,21 @@
         // Enemy shooting patterns: bullet hell style!
         function enemyShootPattern(e, currentFrame) {
             let cx = e.x, cy = e.y;
-            // alternating pattern types based on frame
             let pattern = (Math.floor(currentFrame / 15) % 2 === 0) ? 'spread' : 'aim';
             
             if (pattern === 'spread') {
                 // 5-way spread
                 for (let ang = -0.9; ang <= 0.91; ang += 0.45) {
-                    let dx = Math.sin(ang) * 3.0;
-                    let dy = Math.cos(ang) * 2.2 + 1.2;
-                    enemyBullets.push({ x: cx, y: cy, radius: 4, vx: dx, vy: dy });
+                    let dx = Math.sin(ang) * 3.2;
+                    let dy = Math.cos(ang) * 2.3 + 1.2;
+                    enemyBullets.push({ x: cx, y: cy, radius: 4.5, vx: dx, vy: dy });
                 }
                 // extra dense for hard mode
                 if (waveMod >= 2) {
                     for (let ang = -0.6; ang <= 0.61; ang += 0.6) {
-                        let dx = Math.sin(ang) * 4.2;
-                        let dy = Math.cos(ang) * 1.8 + 1.0;
-                        enemyBullets.push({ x: cx, y: cy, radius: 3.5, vx: dx, vy: dy });
+                        let dx = Math.sin(ang) * 4.5;
+                        let dy = Math.cos(ang) * 2.0 + 1.0;
+                        enemyBullets.push({ x: cx, y: cy, radius: 4, vx: dx, vy: dy });
                     }
                 }
             } else {
@@ -291,31 +333,31 @@
                 let dy = player.y - cy;
                 let len = Math.hypot(dx, dy);
                 if (len > 0.01) { dx /= len; dy /= len; }
-                dx *= 4.2;
-                dy *= 4.0;
-                enemyBullets.push({ x: cx, y: cy, radius: 4, vx: dx + (Math.random() - 0.5) * 0.9, vy: dy + 0.8 });
+                dx *= 4.5;
+                dy *= 4.2;
+                enemyBullets.push({ x: cx, y: cy, radius: 4.5, vx: dx + (Math.random() - 0.5) * 0.9, vy: dy + 0.8 });
                 // additional aimed small bullet for fast type
                 if (e.type === 'fast') {
-                    enemyBullets.push({ x: cx, y: cy, radius: 3, vx: dx * 0.9 + (Math.random() - 0.5)*0.6, vy: dy * 0.9 + 0.5 });
+                    enemyBullets.push({ x: cx, y: cy, radius: 3.5, vx: dx * 0.9 + (Math.random() - 0.5)*0.7, vy: dy * 0.9 + 0.5 });
                 }
             }
             // extra ring if score high (bullet hell climax)
-            if (score > 300 && (currentFrame % 30 === 0)) {
-                for (let a = 0; a < 8; a++) {
-                    let angle = (a / 8) * Math.PI * 2;
-                    let vx = Math.sin(angle) * 2.5;
-                    let vy = Math.cos(angle) * 2.0;
-                    enemyBullets.push({ x: cx, y: cy, radius: 3.5, vx: vx, vy: vy });
+            if (score > 350 && (currentFrame % 28 === 0)) {
+                for (let a = 0; a < 10; a++) {
+                    let angle = (a / 10) * Math.PI * 2;
+                    let vx = Math.sin(angle) * 2.8;
+                    let vy = Math.cos(angle) * 2.2;
+                    enemyBullets.push({ x: cx, y: cy, radius: 3.8, vx: vx, vy: vy });
                 }
             }
         }
         
         // Player auto-fire (stream)
         function shootPlayer() {
-            bullets.push({ x: player.x, y: player.y - 5, radius: 3.5, vx: 0, vy: -7.5 });
+            bullets.push({ x: player.x, y: player.y - 6, radius: 4, vx: 0, vy: -8 });
         }
         
-        // Game logic update (called every frame when active)
+        // Game logic update
         function updateGame() {
             if (gameState !== 'active') return;
             
@@ -329,7 +371,7 @@
             // Enemy spawn logic
             if (enemySpawnCounter <= 0) {
                 spawnEnemy();
-                let spawnDelay = Math.max(18, 32 - Math.floor(score / 180));
+                let spawnDelay = Math.max(16, 30 - Math.floor(score / 180));
                 enemySpawnCounter = spawnDelay;
             } else {
                 enemySpawnCounter--;
@@ -339,13 +381,12 @@
             for (let i = 0; i < enemies.length; i++) {
                 let e = enemies[i];
                 e.y += e.speedY;
-                if (e.y > canvas.height + 70 || e.y < -80) {
+                if (e.y > canvas.height + 80 || e.y < -90) {
                     enemies.splice(i,1);
                     i--;
                     continue;
                 }
-                // Enemy shooting: fire often based on type
-                let shootCooldown = (e.type === 'fast') ? 18 : 28;
+                let shootCooldown = (e.type === 'fast') ? 18 : 26;
                 if (frame % shootCooldown === 0 || (frame % 22 === 0 && e.type === 'normal')) {
                     enemyShootPattern(e, frame);
                 }
@@ -356,7 +397,7 @@
                 let b = bullets[i];
                 b.x += b.vx;
                 b.y += b.vy;
-                if (b.y + 10 < 0 || b.x + 20 < 0 || b.x - 20 > canvas.width) {
+                if (b.y + 12 < 0 || b.x + 25 < 0 || b.x - 25 > canvas.width) {
                     bullets.splice(i,1);
                     i--;
                     continue;
@@ -381,17 +422,16 @@
                 }
             }
             
-            // Update enemy bullets + collision with player (tiny hitbox precision)
+            // Update enemy bullets + collision with player (tiny hitbox)
             for (let i = 0; i < enemyBullets.length; i++) {
                 let eb = enemyBullets[i];
                 eb.x += eb.vx;
                 eb.y += eb.vy;
-                if (eb.x + 40 < 0 || eb.x - 40 > canvas.width || eb.y > canvas.height + 100 || eb.y < -100) {
+                if (eb.x + 50 < 0 || eb.x - 50 > canvas.width || eb.y > canvas.height + 120 || eb.y < -120) {
                     enemyBullets.splice(i,1);
                     i--;
                     continue;
                 }
-                // collision check with player (3px radius -> true bullet hell)
                 let dx = player.x - eb.x;
                 let dy = player.y - eb.y;
                 let dist = Math.hypot(dx, dy);
@@ -405,10 +445,10 @@
             }
             
             // Update player position from mouse
-            player.x = Math.min(canvas.width - 12, Math.max(12, mouseX));
-            player.y = Math.min(canvas.height - 25, Math.max(35, mouseY));
+            player.x = Math.min(canvas.width - 18, Math.max(18, mouseX));
+            player.y = Math.min(canvas.height - 40, Math.max(45, mouseY));
             
-            // Dynamic difficulty: waveMod increases with score
+            // Dynamic difficulty
             waveMod = 1 + Math.floor(score / 350);
         }
         
@@ -417,92 +457,93 @@
             ctx.fillStyle = '#030318';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             // animated background particles
-            for (let i = 0; i < 150; i++) {
+            for (let i = 0; i < 200; i++) {
                 ctx.fillStyle = `hsl(${Date.now() * 0.02 + i * 4}, 75%, 60%)`;
                 ctx.beginPath();
                 ctx.arc((i * 31) % canvas.width, (i * 19 + frame * 0.6) % canvas.height, 1.8, 0, Math.PI * 2);
                 ctx.fill();
             }
             ctx.shadowBlur = 0;
-            ctx.font = '900 44px "Segoe UI", "Poppins"';
+            ctx.font = '900 48px "Segoe UI", "Poppins"';
             ctx.fillStyle = '#0ff';
             ctx.shadowColor = '#0ff';
-            ctx.fillText('☠️ NEBULA HELL ☠️', canvas.width/2 - 210, 150);
-            ctx.font = 'bold 26px monospace';
+            ctx.fillText('☠️ NEBULA HELL ☠️', canvas.width/2 - 230, 160);
+            ctx.font = 'bold 28px monospace';
             ctx.fillStyle = '#f0f';
-            ctx.fillText('» bullet hell gauntlet «', canvas.width/2 - 170, 230);
-            ctx.font = '18px "Segoe UI"';
+            ctx.fillText('» bullet hell gauntlet «', canvas.width/2 - 190, 250);
+            ctx.font = '20px "Segoe UI"';
             ctx.fillStyle = '#bbddff';
-            ctx.fillText('⚡ mouse to move | auto laser | 3px hitbox ⚡', canvas.width/2 - 290, 320);
+            ctx.fillText('⚡ mouse to move | auto laser | 3px hitbox ⚡', canvas.width/2 - 310, 340);
             
-            // Start button
+            // Start button (bigger)
+            let btnW = 260, btnH = 65;
+            let btnX = canvas.width/2 - btnW/2;
+            let btnY = 390;
             ctx.fillStyle = '#0ff';
-            ctx.fillRect(canvas.width/2 - 110, 370, 220, 55);
+            ctx.fillRect(btnX, btnY, btnW, btnH);
             ctx.fillStyle = '#010018';
-            ctx.font = 'bold 24px monospace';
-            ctx.fillText('▶ START GAME', canvas.width/2 - 86, 412);
+            ctx.font = 'bold 28px monospace';
+            ctx.fillText('▶ START GAME', canvas.width/2 - 98, btnY + 44);
             ctx.fillStyle = '#fff9c0';
-            ctx.font = '16px monospace';
-            ctx.fillText('survive the impossible patterns', canvas.width/2 - 155, 500);
+            ctx.font = '18px monospace';
+            ctx.fillText('survive the impossible patterns', canvas.width/2 - 175, 530);
             ctx.fillStyle = '#88aaff';
-            ctx.font = '14px monospace';
-            ctx.fillText('🏆 HIGHSCORE: '+highScore, canvas.width/2 - 80, 555);
+            ctx.font = '16px monospace';
+            ctx.fillText('🏆 HIGHSCORE: '+highScore, canvas.width/2 - 90, 590);
             
-            // detect hover for visual feedback
-            let mouseInBounds = (mouseX > canvas.width/2-110 && mouseX < canvas.width/2+110 && mouseY > 370 && mouseY < 425);
+            let mouseInBounds = (mouseX > btnX && mouseX < btnX+btnW && mouseY > btnY && mouseY < btnY+btnH);
             if (mouseInBounds) {
                 ctx.fillStyle = '#ffffffaa';
-                ctx.fillRect(canvas.width/2-110, 370, 220, 55);
+                ctx.fillRect(btnX, btnY, btnW, btnH);
                 ctx.fillStyle = '#000';
-                ctx.font = 'bold 24px monospace';
-                ctx.fillText('▶ START GAME', canvas.width/2-86, 412);
+                ctx.font = 'bold 28px monospace';
+                ctx.fillText('▶ START GAME', canvas.width/2 - 98, btnY + 44);
             }
         }
         
         function drawGameOver() {
             ctx.fillStyle = '#000000cc';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.font = '800 52px monospace';
+            ctx.font = '800 58px monospace';
             ctx.fillStyle = '#ff3366';
-            ctx.fillText('💀 GAME OVER 💀', canvas.width/2 - 200, 250);
-            ctx.font = '28px monospace';
+            ctx.fillText('💀 GAME OVER 💀', canvas.width/2 - 230, 260);
+            ctx.font = '32px monospace';
             ctx.fillStyle = '#0ff';
-            ctx.fillText('SCORE: '+score, canvas.width/2 - 70, 340);
-            ctx.font = '20px monospace';
+            ctx.fillText('SCORE: '+score, canvas.width/2 - 80, 360);
+            ctx.font = '24px monospace';
             ctx.fillStyle = '#ffaa88';
-            ctx.fillText('click RESTART or press [R]', canvas.width/2 - 140, 430);
+            ctx.fillText('click RESTART or press [R]', canvas.width/2 - 170, 450);
             ctx.fillStyle = '#ffffaa';
-            ctx.fillText('🏆 HIGHSCORE: '+highScore, canvas.width/2 - 105, 490);
+            ctx.fillText('🏆 HIGHSCORE: '+highScore, canvas.width/2 - 125, 520);
             
-            let btnX = canvas.width/2 - 90, btnY = 530;
+            let btnX = canvas.width/2 - 110, btnY = 560, btnW = 220, btnH = 55;
             ctx.fillStyle = '#2277aa';
-            ctx.fillRect(btnX, btnY, 180, 48);
+            ctx.fillRect(btnX, btnY, btnW, btnH);
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 22px monospace';
-            ctx.fillText('⟳ RESTART', btnX+40, btnY+35);
+            ctx.font = 'bold 24px monospace';
+            ctx.fillText('⟳ RESTART', btnX+48, btnY+40);
             
-            let mouseOverBtn = (mouseX > btnX && mouseX < btnX+180 && mouseY > btnY && mouseY < btnY+48);
+            let mouseOverBtn = (mouseX > btnX && mouseX < btnX+btnW && mouseY > btnY && mouseY < btnY+btnH);
             if (mouseOverBtn) {
                 ctx.fillStyle = '#55ccff';
-                ctx.fillRect(btnX, btnY, 180, 48);
+                ctx.fillRect(btnX, btnY, btnW, btnH);
                 ctx.fillStyle = '#000';
-                ctx.fillText('⟳ RESTART', btnX+40, btnY+35);
+                ctx.fillText('⟳ RESTART', btnX+48, btnY+40);
             }
         }
         
         function drawGame() {
-            // deep space background
             ctx.fillStyle = '#050510';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             // stars
-            for (let i = 0; i < 200; i++) {
+            for (let i = 0; i < 280; i++) {
                 ctx.fillStyle = `rgba(255,255,210,${0.4+Math.sin(frame*0.02+i)*0.2})`;
                 ctx.beginPath();
-                ctx.arc((i*131)%canvas.width, (i*57+frame*0.8)%canvas.height, 1.2, 0, Math.PI*2);
+                ctx.arc((i*131)%canvas.width, (i*57+frame*0.8)%canvas.height, 1.3, 0, Math.PI*2);
                 ctx.fill();
             }
             
-            // enemy bullets (bullet hell rain)
+            // enemy bullets
             for (let eb of enemyBullets) {
                 ctx.beginPath();
                 ctx.arc(eb.x, eb.y, eb.radius-1, 0, Math.PI*2);
@@ -512,14 +553,14 @@
                 ctx.arc(eb.x, eb.y, eb.radius-2, 0, Math.PI*2);
                 ctx.fillStyle = '#ff88bb';
                 ctx.fill();
-                ctx.shadowBlur = 5;
+                ctx.shadowBlur = 6;
                 ctx.shadowColor = '#ff00aa';
             }
             ctx.shadowBlur = 0;
             
             // enemies
             for (let e of enemies) {
-                ctx.shadowBlur = 6;
+                ctx.shadowBlur = 7;
                 ctx.shadowColor = '#ff2060';
                 ctx.beginPath();
                 ctx.arc(e.x, e.y, e.radius-2, 0, Math.PI*2);
@@ -530,26 +571,26 @@
                 ctx.fillStyle = 'white';
                 ctx.fill();
                 ctx.fillStyle = 'black';
-                ctx.font = 'bold 14px monospace';
-                ctx.fillText('⚔', e.x-6, e.y+5);
+                ctx.font = 'bold 16px monospace';
+                ctx.fillText('⚔', e.x-8, e.y+6);
             }
             
-            // player bullets (laser)
+            // player bullets
             for (let b of bullets) {
                 ctx.beginPath();
-                ctx.arc(b.x, b.y, 4, 0, Math.PI*2);
+                ctx.arc(b.x, b.y, 4.5, 0, Math.PI*2);
                 ctx.fillStyle = '#0ff';
                 ctx.fill();
                 ctx.beginPath();
-                ctx.arc(b.x, b.y, 2, 0, Math.PI*2);
+                ctx.arc(b.x, b.y, 2.5, 0, Math.PI*2);
                 ctx.fillStyle = 'white';
                 ctx.fill();
             }
             
-            // Player ship: tiny hitbox (3px) + crosshair
+            // Player ship: tiny hitbox + crosshair
             ctx.shadowBlur = 0;
             ctx.beginPath();
-            ctx.arc(player.x, player.y, player.radius+2, 0, Math.PI*2);
+            ctx.arc(player.x, player.y, player.radius+2.5, 0, Math.PI*2);
             ctx.fillStyle = '#88ddffaa';
             ctx.fill();
             ctx.beginPath();
@@ -560,31 +601,27 @@
             ctx.arc(player.x, player.y, 2, 0, Math.PI*2);
             ctx.fillStyle = 'white';
             ctx.fill();
-            // crosshair visual
             ctx.beginPath();
-            ctx.moveTo(player.x-9, player.y);
-            ctx.lineTo(player.x+9, player.y);
-            ctx.moveTo(player.x, player.y-9);
-            ctx.lineTo(player.x, player.y+9);
+            ctx.moveTo(player.x-11, player.y);
+            ctx.lineTo(player.x+11, player.y);
+            ctx.moveTo(player.x, player.y-11);
+            ctx.lineTo(player.x, player.y+11);
             ctx.strokeStyle = '#0ff';
-            ctx.lineWidth = 1.5;
+            ctx.lineWidth = 1.8;
             ctx.stroke();
-            // red hitbox center (tiny dot)
             ctx.fillStyle = 'red';
             ctx.beginPath();
-            ctx.arc(player.x, player.y, 1.6, 0, Math.PI*2);
+            ctx.arc(player.x, player.y, 1.8, 0, Math.PI*2);
             ctx.fill();
             
-            // UI text
             ctx.fillStyle = '#aaf';
-            ctx.font = 'bold 24px "Segoe UI"';
-            ctx.fillText(`SCORE ${score}`, 20, 50);
+            ctx.font = 'bold 26px "Segoe UI"';
+            ctx.fillText(`SCORE ${score}`, 25, 55);
             ctx.fillStyle = '#0ff';
-            ctx.font = 'bold 16px monospace';
-            ctx.fillText(`HELL LVL ${Math.floor(waveMod)}`, canvas.width-130, 45);
+            ctx.font = 'bold 18px monospace';
+            ctx.fillText(`HELL LVL ${Math.floor(waveMod)}`, canvas.width-140, 55);
         }
         
-        // ----- RENDER LOOP -----
         function render() {
             if (gameState === 'menu') drawMenu();
             else if (gameState === 'active') drawGame();
@@ -592,21 +629,19 @@
             requestAnimationFrame(render);
         }
         
-        // Game logic loop (separate for stable updates)
         function gameLoop() {
             if (gameState === 'active') updateGame();
             setTimeout(() => requestAnimationFrame(gameLoop), 16);
         }
         
-        // ----- EVENT HANDLERS -----
         function handleMouseMove(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
             let rawX = (e.clientX - rect.left) * scaleX;
             let rawY = (e.clientY - rect.top) * scaleY;
-            mouseX = Math.min(canvas.width - 10, Math.max(10, rawX));
-            mouseY = Math.min(canvas.height - 30, Math.max(40, rawY));
+            mouseX = Math.min(canvas.width - 15, Math.max(15, rawX));
+            mouseY = Math.min(canvas.height - 45, Math.max(50, rawY));
             if (gameState === 'active') {
                 player.x = mouseX;
                 player.y = mouseY;
@@ -621,13 +656,16 @@
             let clickY = (e.clientY - rect.top) * scaleY;
             
             if (gameState === 'menu') {
-                if (clickX > canvas.width/2-110 && clickX < canvas.width/2+110 && clickY > 370 && clickY < 425) {
+                let btnW = 260, btnH = 65;
+                let btnX = canvas.width/2 - btnW/2;
+                let btnY = 390;
+                if (clickX > btnX && clickX < btnX+btnW && clickY > btnY && clickY < btnY+btnH) {
                     resetGame();
                     gameState = 'active';
                 }
             } else if (gameState === 'gameOver') {
-                let btnX = canvas.width/2 - 90, btnY = 530;
-                if (clickX > btnX && clickX < btnX+180 && clickY > btnY && clickY < btnY+48) {
+                let btnX = canvas.width/2 - 110, btnY = 560, btnW = 220, btnH = 55;
+                if (clickX > btnX && clickX < btnX+btnW && clickY > btnY && clickY < btnY+btnH) {
                     resetGame();
                     gameState = 'active';
                 }
@@ -646,7 +684,6 @@
             }
         }
         
-        // Buttons
         document.getElementById('resetGameBtn').addEventListener('click', () => {
             resetGame();
             gameState = 'active';
@@ -666,7 +703,6 @@
         window.addEventListener('keydown', keyHandler);
         canvas.addEventListener('contextmenu', (e) => e.preventDefault());
         
-        // Initial setup: menu state, valid highscore
         updateUI();
         gameState = 'menu';
         frame = 0;
