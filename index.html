@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>STAR RANGER | All 5 Enemies: Miner Heals + Kamikaze + Spiral + Shield</title>
+    <title>STAR RANGER | BOSS FIGHT + 5 Enemies</title>
     <style>
         * {
             margin: 0;
@@ -237,7 +237,7 @@
     <div class="landing-card">
         <div class="game-title">
             <h1>⭐ STAR RANGER ⭐</h1>
-            <div class="tagline">「 miner heals · kamikaze · spiral · shield · all enemies 」</div>
+            <div class="tagline">「 BOSS FIGHT at 500 pts · 5 enemy types · bullet hell 」</div>
         </div>
 
         <div class="game-zone">
@@ -268,17 +268,18 @@
                     <li><span class="key-icon">🌀 SPIRAL</span> → Rotating bullet rings</li>
                     <li><span class="key-icon">🛡️ SHIELD</span> → Needs 2 hits</li>
                     <li><span class="key-icon">💥 KAMIKAZE</span> → Charges at you</li>
-                    <li><span class="key-icon">⛏️ MINER</span> → Drops ❤️ healing orb (+1 HP)</li>
+                    <li><span class="key-icon">⛏️ MINER</span> → Drops ❤️ healing orb</li>
+                    <li><span class="key-icon">👑 BOSS</span> → Spawns at 500 pts! (30 HP, no other enemies)</li>
                 </ul>
             </div>
             <div class="download-area">
                 <button id="fakeDownloadBtn" class="btn">💾 DOWNLOAD PC BUILD</button>
                 <button id="playNowBtn" class="btn">🎮 PLAY FULLSCREEN</button>
-                <div style="font-size:0.7rem; color:#88aaff;">⛏️ MINER DROPS HEALING ORBS! Collect green hearts!</div>
+                <div style="font-size:0.7rem; color:#88aaff;">👑 BOSS FIGHT at 500 points! Defeat the VOID TITAN.</div>
             </div>
         </div>
         <div class="footer">
-            <span>⚠️ NEW: MINER enemy drops green healing orbs when destroyed! +1 HP. All 5 enemy types active. Press [R].</span>
+            <span>⚠️ BOSS: 30 HP, massive bullet patterns. No other enemies spawn during boss fight. +100 bonus on defeat!</span>
         </div>
     </div>
 </div>
@@ -300,11 +301,17 @@
         let enemies = [];
         let bullets = [];
         let enemyBullets = [];
-        let healthOrbs = [];    // healing drops from Miner
+        let healthOrbs = [];
         let frame = 0;
         let enemySpawnCounter = 0;
         let mouseX = canvas.width/2, mouseY = canvas.height - 80;
         let waveMod = 1;
+        
+        // BOSS variables
+        let boss = null;
+        let bossActive = false;
+        let bossSpawnTrigger = false;
+        let bossDefeatedFlag = false;
         
         function updateUI() {
             const extScore = document.getElementById('externalScore');
@@ -344,6 +351,10 @@
             bullets = [];
             enemyBullets = [];
             healthOrbs = [];
+            boss = null;
+            bossActive = false;
+            bossSpawnTrigger = false;
+            bossDefeatedFlag = false;
             frame = 0;
             enemySpawnCounter = 8;
             waveMod = 1;
@@ -368,51 +379,104 @@
             }
         }
         
-        // ----- ENEMY TYPES -----
-        // 1. Normal (red)
-        // 2. Fast (yellow)
-        // 3. SPIRAL CASTER (purple) - rotating rings
-        // 4. SHIELD (cyan) - 2 hits
-        // 5. KAMIKAZE (orange) - charges player
-        // 6. MINER (green) - drops healing orb on death
+        // Spawn BOSS (replaces all enemies, no other spawns)
+        function spawnBoss() {
+            boss = {
+                x: canvas.width / 2,
+                y: 80,
+                radius: 40,
+                hp: 30,
+                maxHp: 30,
+                type: 'boss',
+                phase: 0,
+                shootTimer: 0
+            };
+            bossActive = true;
+            bossSpawnTrigger = true;
+            // Clear all existing enemies
+            enemies = [];
+            // Clear existing enemy bullets for clean fight
+            enemyBullets = [];
+        }
         
+        // Boss attack patterns (intense bullet hell)
+        function bossAttack() {
+            if (!boss) return;
+            let cx = boss.x, cy = boss.y;
+            let pattern = Math.floor(frame / 30) % 4;
+            
+            // Pattern 1: Radial burst
+            if (pattern === 0) {
+                for (let i = 0; i < 16; i++) {
+                    let angle = (i / 16) * Math.PI * 2 + frame * 0.05;
+                    let speed = 3.5;
+                    enemyBullets.push({ x: cx, y: cy, radius: 5, vx: Math.sin(angle) * speed, vy: Math.cos(angle) * speed, isBossBullet: true });
+                }
+            }
+            // Pattern 2: Aimed + spread
+            else if (pattern === 1) {
+                let dx = player.x - cx, dy = player.y - cy;
+                let len = Math.hypot(dx, dy);
+                if (len > 0.01) { dx /= len; dy /= len; }
+                for (let ang = -0.6; ang <= 0.61; ang += 0.3) {
+                    let angle = Math.atan2(dy, dx) + ang;
+                    let speed = 4.2;
+                    enemyBullets.push({ x: cx, y: cy, radius: 4.5, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, isBossBullet: true });
+                }
+            }
+            // Pattern 3: Spiral rings (like spiral caster but bigger)
+            else if (pattern === 2) {
+                let angleStep = frame * 0.1;
+                for (let i = 0; i < 20; i++) {
+                    let angle = angleStep + (i / 20) * Math.PI * 2;
+                    let speed = 2.8;
+                    enemyBullets.push({ x: cx, y: cy, radius: 4, vx: Math.sin(angle) * speed, vy: Math.cos(angle) * speed + 1.0, isBossBullet: true });
+                }
+            }
+            // Pattern 4: Cross + diagonal
+            else {
+                let angles = [0, Math.PI/2, Math.PI, 3*Math.PI/2, Math.PI/4, 3*Math.PI/4, 5*Math.PI/4, 7*Math.PI/4];
+                for (let ang of angles) {
+                    let speed = 4.0;
+                    enemyBullets.push({ x: cx, y: cy, radius: 5, vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed, isBossBullet: true });
+                }
+            }
+            
+            // Extra: when boss HP below 15, add more bullets
+            if (boss.hp < 15 && frame % 15 === 0) {
+                for (let i = 0; i < 12; i++) {
+                    let angle = (i / 12) * Math.PI * 2 + frame * 0.1;
+                    enemyBullets.push({ x: cx, y: cy, radius: 4, vx: Math.sin(angle) * 3.2, vy: Math.cos(angle) * 3.2, isBossBullet: true });
+                }
+            }
+        }
+        
+        // Spawn normal enemies (only if boss is NOT active)
         function spawnEnemy() {
+            if (bossActive) return; // No other enemies during boss fight
+            
             let rand = Math.random();
             let spiralChance = Math.min(0.24, 0.10 + Math.floor(score / 600) * 0.04);
             let shieldChance = Math.min(0.22, 0.10 + Math.floor(score / 500) * 0.04);
             let kamikazeChance = Math.min(0.24, 0.12 + Math.floor(score / 400) * 0.04);
             let minerChance = Math.min(0.24, 0.12 + Math.floor(score / 350) * 0.04);
             
-            // Spiral Caster
             if (rand < spiralChance && score > 80) {
-                let x = 30 + Math.random() * (canvas.width - 60);
-                let y = -35;
-                enemies.push({ x, y, radius: 16, hp: 1, color: '#b266ff', speedY: 1.4 + waveMod * 0.4, type: 'spiral' });
+                enemies.push({ x: 30 + Math.random() * (canvas.width - 60), y: -35, radius: 16, hp: 1, color: '#b266ff', speedY: 1.4 + waveMod * 0.4, type: 'spiral' });
                 return;
             }
-            // Shield Enemy
             if (rand < spiralChance + shieldChance && score > 50) {
-                let x = 30 + Math.random() * (canvas.width - 60);
-                let y = -35;
-                enemies.push({ x, y, radius: 16, hp: 2, maxHp: 2, color: '#44ddff', speedY: 1.2 + waveMod * 0.3, type: 'shield' });
+                enemies.push({ x: 30 + Math.random() * (canvas.width - 60), y: -35, radius: 16, hp: 2, maxHp: 2, color: '#44ddff', speedY: 1.2 + waveMod * 0.3, type: 'shield' });
                 return;
             }
-            // Kamikaze
             if (rand < spiralChance + shieldChance + kamikazeChance && score > 60) {
-                let x = 20 + Math.random() * (canvas.width - 40);
-                let y = -40;
-                enemies.push({ x, y, radius: 14, hp: 1, color: '#ff8844', speedY: 0, type: 'kamikaze', chargeSpeed: 4.0 + waveMod * 0.5 });
+                enemies.push({ x: 20 + Math.random() * (canvas.width - 40), y: -40, radius: 14, hp: 1, color: '#ff8844', speedY: 0, type: 'kamikaze', chargeSpeed: 4.0 + waveMod * 0.5 });
                 return;
             }
-            // MINER (drops healing orb)
             if (rand < spiralChance + shieldChance + kamikazeChance + minerChance && score > 70) {
-                let x = 25 + Math.random() * (canvas.width - 50);
-                let y = -35;
-                enemies.push({ x, y, radius: 14, hp: 1, color: '#66ff66', speedY: 1.3 + waveMod * 0.35, type: 'miner' });
+                enemies.push({ x: 25 + Math.random() * (canvas.width - 50), y: -35, radius: 14, hp: 1, color: '#66ff66', speedY: 1.3 + waveMod * 0.35, type: 'miner' });
                 return;
             }
-            
-            // Fallback: normal/fast
             let type = Math.random() < 0.7 ? 'normal' : 'fast';
             let x = 25 + Math.random() * (canvas.width - 50);
             let y = -30;
@@ -421,22 +485,20 @@
             enemies.push({ x, y, radius: 14, hp: 1, color, speedY, type });
         }
         
-        // Attack patterns
-        function spiralCasterAttack(e, currentFrame) {
+        // Attack patterns for normal enemies
+        function spiralCasterAttack(e) {
             let cx = e.x, cy = e.y;
-            let angleStep = (currentFrame * 0.08) % (Math.PI * 2);
-            let bulletCount = 12 + Math.floor(waveMod * 2);
-            for (let i = 0; i < bulletCount; i++) {
-                let angle = angleStep + (i / bulletCount) * Math.PI * 2;
+            let angleStep = (frame * 0.08) % (Math.PI * 2);
+            for (let i = 0; i < 12 + Math.floor(waveMod * 2); i++) {
+                let angle = angleStep + (i / (12 + Math.floor(waveMod * 2))) * Math.PI * 2;
                 let speed = 2.2 + waveMod * 0.3;
                 enemyBullets.push({ x: cx, y: cy, radius: 4, vx: Math.sin(angle) * speed, vy: Math.cos(angle) * speed + 0.8, isSpiral: true });
             }
-            if (score > 250) {
-                let angleStep2 = (currentFrame * 0.12) % (Math.PI * 2);
+            if (score > 250 && frame % 22 === 0) {
+                let angleStep2 = (frame * 0.12) % (Math.PI * 2);
                 for (let i = 0; i < 8; i++) {
                     let angle = angleStep2 + (i / 8) * Math.PI * 2;
-                    let speed = 3.0;
-                    enemyBullets.push({ x: cx, y: cy, radius: 3.5, vx: Math.sin(angle) * speed, vy: Math.cos(angle) * speed + 0.5, isSpiral: true });
+                    enemyBullets.push({ x: cx, y: cy, radius: 3.5, vx: Math.sin(angle) * 3.0, vy: Math.cos(angle) * 3.0 + 0.5, isSpiral: true });
                 }
             }
         }
@@ -452,17 +514,12 @@
             enemyBullets.push({ x: cx, y: cy, radius: 4.5, vx: dx * 4.0 + (Math.random() - 0.5)*0.5, vy: dy * 3.8 + 0.5 });
         }
         
-        function standardEnemyShoot(e, currentFrame) {
+        function standardEnemyShoot(e) {
             let cx = e.x, cy = e.y;
-            let pattern = (Math.floor(currentFrame / 15) % 2 === 0) ? 'spread' : 'aim';
+            let pattern = (Math.floor(frame / 15) % 2 === 0) ? 'spread' : 'aim';
             if (pattern === 'spread') {
                 for (let ang = -0.9; ang <= 0.91; ang += 0.45) {
                     enemyBullets.push({ x: cx, y: cy, radius: 4.5, vx: Math.sin(ang) * 3.2, vy: Math.cos(ang) * 2.3 + 1.2 });
-                }
-                if (waveMod >= 2) {
-                    for (let ang = -0.6; ang <= 0.61; ang += 0.6) {
-                        enemyBullets.push({ x: cx, y: cy, radius: 4, vx: Math.sin(ang) * 4.5, vy: Math.cos(ang) * 2.0 + 1.0 });
-                    }
                 }
             } else {
                 let dx = player.x - cx, dy = player.y - cy;
@@ -473,61 +530,108 @@
                     enemyBullets.push({ x: cx, y: cy, radius: 3.5, vx: dx * 4.0 + (Math.random() - 0.5)*0.7, vy: dy * 3.8 + 0.5 });
                 }
             }
-            if (score > 350 && (currentFrame % 28 === 0)) {
-                for (let a = 0; a < 10; a++) {
-                    let angle = (a / 10) * Math.PI * 2;
-                    enemyBullets.push({ x: cx, y: cy, radius: 3.8, vx: Math.sin(angle) * 2.8, vy: Math.cos(angle) * 2.2 });
-                }
-            }
         }
         
         function shootPlayer() {
             bullets.push({ x: player.x, y: player.y - 6, radius: 4, vx: 0, vy: -8 });
         }
         
-        // Update game logic
+        // Main update
         function updateGame() {
             if (gameState !== 'active') return;
             frame++;
             if (invincibleFrames > 0) invincibleFrames--;
             
+            // BOSS TRIGGER: when score reaches 500 and boss not active and not defeated
+            if (score >= 500 && !bossActive && !bossDefeatedFlag && !bossSpawnTrigger) {
+                spawnBoss();
+            }
+            
+            // Auto-fire
             if (frame % 4 === 0 || frame % 3 === 0) shootPlayer();
             
-            if (enemySpawnCounter <= 0) {
-                spawnEnemy();
-                enemySpawnCounter = Math.max(16, 30 - Math.floor(score / 180));
-            } else {
-                enemySpawnCounter--;
-            }
-            
-            // Update enemies: movement + attacks
-            for (let i = 0; i < enemies.length; i++) {
-                let e = enemies[i];
-                if (e.type === 'kamikaze') {
-                    let dx = player.x - e.x, dy = player.y - e.y;
-                    let len = Math.hypot(dx, dy);
-                    if (len > 0.01) {
-                        let speed = e.chargeSpeed || 4.5;
-                        e.x += (dx / len) * speed;
-                        e.y += (dy / len) * speed;
-                    }
+            // Normal enemy spawning (only if no boss)
+            if (!bossActive) {
+                if (enemySpawnCounter <= 0) {
+                    spawnEnemy();
+                    enemySpawnCounter = Math.max(16, 30 - Math.floor(score / 180));
                 } else {
-                    e.y += e.speedY;
-                }
-                if (e.y > canvas.height + 80 || e.y < -90 || e.x < -80 || e.x > canvas.width + 80) {
-                    enemies.splice(i,1);
-                    i--;
-                    continue;
-                }
-                if (e.type === 'spiral' && (frame % 22 === 0 || (frame % 18 === 0 && score > 200))) spiralCasterAttack(e, frame);
-                else if (e.type === 'shield' && frame % 28 === 0) shieldEnemyAttack(e);
-                else if (e.type !== 'kamikaze' && e.type !== 'miner') {
-                    let cooldown = (e.type === 'fast') ? 18 : 26;
-                    if (frame % cooldown === 0 || (frame % 22 === 0 && e.type === 'normal')) standardEnemyShoot(e, frame);
+                    enemySpawnCounter--;
                 }
             }
             
-            // Player bullets vs enemies + Miner drops healing orb on death
+            // BOSS update
+            if (bossActive && boss) {
+                // Boss movement: slight sine wave
+                boss.x = canvas.width/2 + Math.sin(frame * 0.02) * 60;
+                boss.y = 80 + Math.sin(frame * 0.03) * 20;
+                
+                // Boss shooting every 20 frames
+                if (frame % 20 === 0) {
+                    bossAttack();
+                }
+                
+                // Boss collision with player bullets
+                for (let i = 0; i < bullets.length; i++) {
+                    let b = bullets[i];
+                    let dist = Math.hypot(b.x - boss.x, b.y - boss.y);
+                    if (dist < b.radius + boss.radius) {
+                        boss.hp--;
+                        bullets.splice(i,1);
+                        i--;
+                        if (boss.hp <= 0) {
+                            // BOSS DEFEATED
+                            bossActive = false;
+                            boss = null;
+                            bossDefeatedFlag = true;
+                            score += 100; // BONUS
+                            updateUI();
+                            setHighScore();
+                            // Clear remaining boss bullets
+                            enemyBullets = [];
+                        }
+                        break;
+                    }
+                }
+                
+                // Boss collision with player
+                if (boss && Math.hypot(player.x - boss.x, player.y - boss.y) < player.radius + boss.radius) {
+                    const died = damagePlayer();
+                    if (died) return;
+                    invincibleFrames = INVINCIBLE_DURATION;
+                }
+            }
+            
+            // Update normal enemies (only if no boss)
+            if (!bossActive) {
+                for (let i = 0; i < enemies.length; i++) {
+                    let e = enemies[i];
+                    if (e.type === 'kamikaze') {
+                        let dx = player.x - e.x, dy = player.y - e.y;
+                        let len = Math.hypot(dx, dy);
+                        if (len > 0.01) {
+                            let speed = e.chargeSpeed || 4.5;
+                            e.x += (dx / len) * speed;
+                            e.y += (dy / len) * speed;
+                        }
+                    } else {
+                        e.y += e.speedY;
+                    }
+                    if (e.y > canvas.height + 80 || e.y < -90 || e.x < -80 || e.x > canvas.width + 80) {
+                        enemies.splice(i,1);
+                        i--;
+                        continue;
+                    }
+                    if (e.type === 'spiral' && (frame % 22 === 0 || (frame % 18 === 0 && score > 200))) spiralCasterAttack(e);
+                    else if (e.type === 'shield' && frame % 28 === 0) shieldEnemyAttack(e);
+                    else if (e.type !== 'kamikaze' && e.type !== 'miner') {
+                        let cooldown = (e.type === 'fast') ? 18 : 26;
+                        if (frame % cooldown === 0 || (frame % 22 === 0 && e.type === 'normal')) standardEnemyShoot(e);
+                    }
+                }
+            }
+            
+            // Player bullets vs normal enemies
             for (let i = 0; i < bullets.length; i++) {
                 let b = bullets[i];
                 b.x += b.vx;
@@ -540,14 +644,10 @@
                 let hit = false;
                 for (let j = 0; j < enemies.length; j++) {
                     let e = enemies[j];
-                    let dist = Math.hypot(b.x - e.x, b.y - e.y);
-                    if (dist < b.radius + e.radius) {
+                    if (Math.hypot(b.x - e.x, b.y - e.y) < b.radius + e.radius) {
                         e.hp--;
                         if (e.hp <= 0) {
-                            // MINER: drop healing orb
-                            if (e.type === 'miner') {
-                                healthOrbs.push({ x: e.x, y: e.y, radius: 8, life: 120 });
-                            }
+                            if (e.type === 'miner') healthOrbs.push({ x: e.x, y: e.y, radius: 8, life: 120 });
                             enemies.splice(j,1);
                             score += 10;
                             updateUI();
@@ -563,13 +663,12 @@
                 if (hit) { bullets.splice(i,1); i--; }
             }
             
-            // Update healing orbs and collection
+            // Healing orbs
             for (let i = 0; i < healthOrbs.length; i++) {
                 let orb = healthOrbs[i];
                 orb.y += 1.5;
                 orb.life--;
-                let distToPlayer = Math.hypot(player.x - orb.x, player.y - orb.y);
-                if (distToPlayer < player.radius + orb.radius) {
+                if (Math.hypot(player.x - orb.x, player.y - orb.y) < player.radius + orb.radius) {
                     healPlayer(1);
                     healthOrbs.splice(i,1);
                     i--;
@@ -615,7 +714,129 @@
             waveMod = 1 + Math.floor(score / 350);
         }
         
-        // DRAWING
+        // DRAWING (includes boss)
+        function drawGame() {
+            ctx.fillStyle = '#050510';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < 280; i++) {
+                ctx.fillStyle = `rgba(255,255,210,${0.4+Math.sin(frame*0.02+i)*0.2})`;
+                ctx.beginPath();
+                ctx.arc((i*131)%canvas.width, (i*57+frame*0.8)%canvas.height, 1.3, 0, Math.PI*2);
+                ctx.fill();
+            }
+            
+            // enemy bullets
+            for (let eb of enemyBullets) {
+                ctx.beginPath();
+                ctx.arc(eb.x, eb.y, eb.radius-1, 0, Math.PI*2);
+                ctx.fillStyle = eb.isBossBullet ? '#ffaa44' : (eb.isSpiral ? '#dd88ff' : (eb.isShieldBullet ? '#88ddff' : '#ff4477'));
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(eb.x, eb.y, eb.radius-2, 0, Math.PI*2);
+                ctx.fillStyle = eb.isBossBullet ? '#ffdd88' : (eb.isSpiral ? '#f0aaff' : (eb.isShieldBullet ? '#aaffff' : '#ff88bb'));
+                ctx.fill();
+                ctx.shadowBlur = 5;
+            }
+            ctx.shadowBlur = 0;
+            
+            // healing orbs
+            for (let orb of healthOrbs) {
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, orb.radius-2, 0, Math.PI*2);
+                ctx.fillStyle = '#44ff44';
+                ctx.fill();
+                ctx.fillStyle = 'darkgreen';
+                ctx.font = '14px monospace';
+                ctx.fillText('❤️', orb.x-6, orb.y+5);
+            }
+            
+            // BOSS drawing
+            if (bossActive && boss) {
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = '#ff6600';
+                ctx.beginPath();
+                ctx.arc(boss.x, boss.y, boss.radius-3, 0, Math.PI*2);
+                ctx.fillStyle = '#cc33ff';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(boss.x, boss.y, boss.radius-8, 0, Math.PI*2);
+                ctx.fillStyle = '#ff44aa';
+                ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 24px monospace';
+                ctx.fillText('👑', boss.x-15, boss.y+10);
+                ctx.font = 'bold 16px monospace';
+                ctx.fillStyle = '#ffffaa';
+                ctx.fillText(`BOSS HP: ${boss.hp}/${boss.maxHp}`, boss.x-45, boss.y-25);
+                ctx.fillStyle = '#ffaa66';
+                ctx.font = 'bold 14px monospace';
+                ctx.fillText('VOID TITAN', boss.x-45, boss.y-45);
+            }
+            
+            // normal enemies
+            for (let e of enemies) {
+                ctx.shadowBlur = 7;
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, e.radius-2, 0, Math.PI*2);
+                ctx.fillStyle = e.color;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, e.radius-5, 0, Math.PI*2);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+                ctx.fillStyle = 'black';
+                ctx.font = 'bold 16px monospace';
+                if (e.type === 'spiral') ctx.fillText('🌀', e.x-10, e.y+7);
+                else if (e.type === 'shield') { ctx.fillText('🛡️', e.x-10, e.y+7); ctx.font = 'bold 12px monospace'; ctx.fillStyle = '#ffffaa'; ctx.fillText(`${e.hp}❤️`, e.x-6, e.y-8); }
+                else if (e.type === 'kamikaze') ctx.fillText('💥', e.x-10, e.y+7);
+                else if (e.type === 'miner') ctx.fillText('⛏️', e.x-10, e.y+7);
+                else ctx.fillText('⚔', e.x-8, e.y+6);
+            }
+            
+            // player bullets
+            for (let b of bullets) {
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, 4.5, 0, Math.PI*2);
+                ctx.fillStyle = '#0ff';
+                ctx.fill();
+            }
+            
+            // player
+            let drawPlayer = !(invincibleFrames > 0 && (Math.floor(Date.now() / 50) % 3 === 0));
+            if (drawPlayer) {
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.radius+2.5, 0, Math.PI*2);
+                ctx.fillStyle = '#88ddffaa';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
+                ctx.fillStyle = '#0ff';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(player.x-11, player.y);
+                ctx.lineTo(player.x+11, player.y);
+                ctx.moveTo(player.x, player.y-11);
+                ctx.lineTo(player.x, player.y+11);
+                ctx.strokeStyle = '#0ff';
+                ctx.lineWidth = 1.8;
+                ctx.stroke();
+                ctx.fillStyle = 'red';
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, 1.8, 0, Math.PI*2);
+                ctx.fill();
+            }
+            
+            ctx.fillStyle = '#aaf';
+            ctx.font = 'bold 26px "Segoe UI"';
+            ctx.fillText(`SCORE ${score}`, 25, 55);
+            if (bossActive) {
+                ctx.fillStyle = '#ff8844';
+                ctx.font = 'bold 20px monospace';
+                ctx.fillText(`⚔️ BOSS FIGHT ⚔️`, canvas.width-180, 55);
+            }
+        }
+        
+        // Menu and Game Over draw functions (same as before, shortened for space)
         function drawMenu() {
             ctx.fillStyle = '#030318';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -630,11 +851,10 @@
             ctx.fillText('⭐ STAR RANGER ⭐', canvas.width/2 - 210, 160);
             ctx.font = 'bold 28px monospace';
             ctx.fillStyle = '#f0f';
-            ctx.fillText('» miner heals · 5 enemy types «', canvas.width/2 - 240, 250);
+            ctx.fillText('» BOSS FIGHT at 500 pts «', canvas.width/2 - 230, 250);
             ctx.font = '20px "Segoe UI"';
             ctx.fillStyle = '#bbddff';
-            ctx.fillText('⚡ Miner drops ❤️ orbs | Kamikaze charges | Shield 2 hits ⚡', canvas.width/2 - 360, 340);
-            
+            ctx.fillText('⚡ Defeat the VOID TITAN! +100 bonus ⚡', canvas.width/2 - 300, 340);
             let btnW = 260, btnH = 65, btnX = canvas.width/2 - btnW/2, btnY = 390;
             ctx.fillStyle = '#0ff';
             ctx.fillRect(btnX, btnY, btnW, btnH);
@@ -643,11 +863,10 @@
             ctx.fillText('▶ START GAME', canvas.width/2 - 98, btnY + 44);
             ctx.fillStyle = '#fff9c0';
             ctx.font = '18px monospace';
-            ctx.fillText('collect green orbs to heal!', canvas.width/2 - 165, 530);
+            ctx.fillText('reach 500 points to summon the boss!', canvas.width/2 - 190, 530);
             ctx.fillStyle = '#88aaff';
             ctx.font = '16px monospace';
             ctx.fillText('🏆 HIGHSCORE: '+highScore, canvas.width/2 - 90, 590);
-            
             if (mouseX > btnX && mouseX < btnX+btnW && mouseY > btnY && mouseY < btnY+btnH) {
                 ctx.fillStyle = '#ffffffaa';
                 ctx.fillRect(btnX, btnY, btnW, btnH);
@@ -684,120 +903,13 @@
             }
         }
         
-        function drawGame() {
-            ctx.fillStyle = '#050510';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            for (let i = 0; i < 280; i++) {
-                ctx.fillStyle = `rgba(255,255,210,${0.4+Math.sin(frame*0.02+i)*0.2})`;
-                ctx.beginPath();
-                ctx.arc((i*131)%canvas.width, (i*57+frame*0.8)%canvas.height, 1.3, 0, Math.PI*2);
-                ctx.fill();
-            }
-            // enemy bullets
-            for (let eb of enemyBullets) {
-                ctx.beginPath();
-                ctx.arc(eb.x, eb.y, eb.radius-1, 0, Math.PI*2);
-                ctx.fillStyle = eb.isSpiral ? '#dd88ff' : (eb.isShieldBullet ? '#88ddff' : '#ff4477');
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(eb.x, eb.y, eb.radius-2, 0, Math.PI*2);
-                ctx.fillStyle = eb.isSpiral ? '#f0aaff' : (eb.isShieldBullet ? '#aaffff' : '#ff88bb');
-                ctx.fill();
-                ctx.shadowBlur = 5;
-                ctx.shadowColor = eb.isSpiral ? '#aa66ff' : (eb.isShieldBullet ? '#44aaff' : '#ff00aa');
-            }
-            ctx.shadowBlur = 0;
-            // healing orbs
-            for (let orb of healthOrbs) {
-                ctx.beginPath();
-                ctx.arc(orb.x, orb.y, orb.radius-2, 0, Math.PI*2);
-                ctx.fillStyle = '#44ff44';
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(orb.x, orb.y, orb.radius-4, 0, Math.PI*2);
-                ctx.fillStyle = '#aaffaa';
-                ctx.fill();
-                ctx.fillStyle = 'darkgreen';
-                ctx.font = '14px monospace';
-                ctx.fillText('❤️', orb.x-6, orb.y+5);
-            }
-            // enemies
-            for (let e of enemies) {
-                ctx.shadowBlur = 7;
-                ctx.shadowColor = e.type === 'spiral' ? '#aa66ff' : (e.type === 'shield' ? '#44ccff' : (e.type === 'kamikaze' ? '#ff8844' : (e.type === 'miner' ? '#66ff66' : '#ff2060')));
-                ctx.beginPath();
-                ctx.arc(e.x, e.y, e.radius-2, 0, Math.PI*2);
-                ctx.fillStyle = e.color;
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(e.x, e.y, e.radius-5, 0, Math.PI*2);
-                ctx.fillStyle = e.type === 'spiral' ? '#e0ccff' : (e.type === 'shield' ? '#ccffff' : (e.type === 'kamikaze' ? '#ffcc88' : (e.type === 'miner' ? '#ccffcc' : 'white')));
-                ctx.fill();
-                ctx.fillStyle = 'black';
-                ctx.font = 'bold 16px monospace';
-                if (e.type === 'spiral') ctx.fillText('🌀', e.x-10, e.y+7);
-                else if (e.type === 'shield') { ctx.fillText('🛡️', e.x-10, e.y+7); ctx.font = 'bold 12px monospace'; ctx.fillStyle = '#ffffaa'; ctx.fillText(`${e.hp}❤️`, e.x-6, e.y-8); }
-                else if (e.type === 'kamikaze') ctx.fillText('💥', e.x-10, e.y+7);
-                else if (e.type === 'miner') ctx.fillText('⛏️', e.x-10, e.y+7);
-                else ctx.fillText('⚔', e.x-8, e.y+6);
-            }
-            // player bullets
-            for (let b of bullets) {
-                ctx.beginPath();
-                ctx.arc(b.x, b.y, 4.5, 0, Math.PI*2);
-                ctx.fillStyle = '#0ff';
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(b.x, b.y, 2.5, 0, Math.PI*2);
-                ctx.fillStyle = 'white';
-                ctx.fill();
-            }
-            // player
-            let drawPlayer = !(invincibleFrames > 0 && (Math.floor(Date.now() / 50) % 3 === 0));
-            if (drawPlayer) {
-                ctx.shadowBlur = 0;
-                ctx.beginPath();
-                ctx.arc(player.x, player.y, player.radius+2.5, 0, Math.PI*2);
-                ctx.fillStyle = '#88ddffaa';
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
-                ctx.fillStyle = '#0ff';
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(player.x, player.y, 2, 0, Math.PI*2);
-                ctx.fillStyle = 'white';
-                ctx.fill();
-                ctx.beginPath();
-                ctx.moveTo(player.x-11, player.y);
-                ctx.lineTo(player.x+11, player.y);
-                ctx.moveTo(player.x, player.y-11);
-                ctx.lineTo(player.x, player.y+11);
-                ctx.strokeStyle = '#0ff';
-                ctx.lineWidth = 1.8;
-                ctx.stroke();
-                ctx.fillStyle = 'red';
-                ctx.beginPath();
-                ctx.arc(player.x, player.y, 1.8, 0, Math.PI*2);
-                ctx.fill();
-            }
-            ctx.fillStyle = '#aaf';
-            ctx.font = 'bold 26px "Segoe UI"';
-            ctx.fillText(`SCORE ${score}`, 25, 55);
-            ctx.fillStyle = '#0ff';
-            ctx.font = 'bold 18px monospace';
-            ctx.fillText(`HELL LVL ${Math.floor(waveMod)}`, canvas.width-140, 55);
-            ctx.fillStyle = '#88ff88';
-            ctx.font = 'bold 14px monospace';
-            ctx.fillText(`⛏️ MINER HEALS`, canvas.width-170, 95);
-        }
-        
         function render() {
             if (gameState === 'menu') drawMenu();
             else if (gameState === 'active') drawGame();
             else if (gameState === 'gameOver') drawGameOver();
             requestAnimationFrame(render);
         }
+        
         function gameLoop() {
             if (gameState === 'active') updateGame();
             setTimeout(() => requestAnimationFrame(gameLoop), 16);
@@ -811,6 +923,7 @@
             mouseY = Math.min(canvas.height - 50, Math.max(50, (e.clientY - rect.top) * scaleY));
             if (gameState === 'active') { player.x = mouseX; player.y = mouseY; }
         }
+        
         function handleCanvasClick(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -825,6 +938,7 @@
                 if (clickX > btnX && clickX < btnX+220 && clickY > btnY && clickY < btnY+55) { resetGame(); gameState = 'active'; }
             }
         }
+        
         function keyHandler(e) {
             if (e.key === 'r' || e.key === 'R') { e.preventDefault(); resetGame(); gameState = 'active'; }
             if (e.key === 'Escape' && gameState === 'active') { gameState = 'menu'; e.preventDefault(); }
@@ -832,7 +946,7 @@
         
         document.getElementById('resetGameBtn').addEventListener('click', () => { resetGame(); gameState = 'active'; });
         document.getElementById('playNowBtn').addEventListener('click', (e) => { e.preventDefault(); resetGame(); gameState = 'active'; });
-        document.getElementById('fakeDownloadBtn').addEventListener('click', (e) => { e.preventDefault(); alert('⛏️ MINER ENEMY: drops green healing orbs when destroyed! +1 HP. All 5 enemy types active.'); });
+        document.getElementById('fakeDownloadBtn').addEventListener('click', (e) => { e.preventDefault(); alert('👑 BOSS FIGHT: Reach 500 points to summon the VOID TITAN (30 HP). No other enemies spawn during boss fight. +100 bonus on victory!'); });
         
         canvas.addEventListener('mousemove', handleMouseMove);
         canvas.addEventListener('click', handleCanvasClick);
