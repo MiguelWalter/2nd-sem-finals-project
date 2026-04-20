@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>STAR RANGER | Kamikaze + Spiral + Shield · Bullet Hell</title>
+    <title>STAR RANGER | All 5 Enemies: Miner Heals + Kamikaze + Spiral + Shield</title>
     <style>
         * {
             margin: 0;
@@ -237,7 +237,7 @@
     <div class="landing-card">
         <div class="game-title">
             <h1>⭐ STAR RANGER ⭐</h1>
-            <div class="tagline">「 kamikaze · spiral · shield · 3-hit survival 」</div>
+            <div class="tagline">「 miner heals · kamikaze · spiral · shield · all enemies 」</div>
         </div>
 
         <div class="game-zone">
@@ -262,22 +262,23 @@
             <div class="controls-box">
                 <h3>🎮 CONTROLS & RULES</h3>
                 <ul class="instructions-list">
-                    <li><span class="key-icon">🖱️ MOUSE</span> → Move your ship (tiny hitbox)</li>
-                    <li><span class="key-icon">💥 AUTO</span> → Continuous laser stream</li>
-                    <li><span class="key-icon">❤️ 3 HITS</span> → 3 hearts! Each bullet = 1 damage</li>
-                    <li><span class="key-icon">🌀 SPIRAL</span> → Spiral Caster (rotating bullet rings)</li>
-                    <li><span class="key-icon">🛡️ SHIELD</span> → Shield enemy (2 hits to destroy)</li>
-                    <li><span class="key-icon">💥 KAMIKAZE</span> → Charges straight at player! (1 hit)</li>
+                    <li><span class="key-icon">🖱️ MOUSE</span> → Move ship (tiny hitbox)</li>
+                    <li><span class="key-icon">💥 AUTO</span> → Continuous laser</li>
+                    <li><span class="key-icon">❤️ 3 HITS</span> → Base health</li>
+                    <li><span class="key-icon">🌀 SPIRAL</span> → Rotating bullet rings</li>
+                    <li><span class="key-icon">🛡️ SHIELD</span> → Needs 2 hits</li>
+                    <li><span class="key-icon">💥 KAMIKAZE</span> → Charges at you</li>
+                    <li><span class="key-icon">⛏️ MINER</span> → Drops ❤️ healing orb (+1 HP)</li>
                 </ul>
             </div>
             <div class="download-area">
                 <button id="fakeDownloadBtn" class="btn">💾 DOWNLOAD PC BUILD</button>
                 <button id="playNowBtn" class="btn">🎮 PLAY FULLSCREEN</button>
-                <div style="font-size:0.7rem; color:#88aaff;">💥 KAMIKAZE charges you! Dodge or destroy!</div>
+                <div style="font-size:0.7rem; color:#88aaff;">⛏️ MINER DROPS HEALING ORBS! Collect green hearts!</div>
             </div>
         </div>
         <div class="footer">
-            <span>⚠️ NEW: KAMIKAZE enemy (orange flame) charges straight at you! Spiral + Shield remain. Press [R] restart.</span>
+            <span>⚠️ NEW: MINER enemy drops green healing orbs when destroyed! +1 HP. All 5 enemy types active. Press [R].</span>
         </div>
     </div>
 </div>
@@ -299,6 +300,7 @@
         let enemies = [];
         let bullets = [];
         let enemyBullets = [];
+        let healthOrbs = [];    // healing drops from Miner
         let frame = 0;
         let enemySpawnCounter = 0;
         let mouseX = canvas.width/2, mouseY = canvas.height - 80;
@@ -327,6 +329,13 @@
             }
         }
         
+        function healPlayer(amount = 1) {
+            if (playerHp < 3) {
+                playerHp = Math.min(3, playerHp + amount);
+                updateUI();
+            }
+        }
+        
         function resetGame() {
             score = 0;
             playerHp = 3;
@@ -334,6 +343,7 @@
             enemies = [];
             bullets = [];
             enemyBullets = [];
+            healthOrbs = [];
             frame = 0;
             enemySpawnCounter = 8;
             waveMod = 1;
@@ -359,66 +369,59 @@
         }
         
         // ----- ENEMY TYPES -----
-        // 1. Normal (red) - 1 hit
-        // 2. Fast (yellow) - 1 hit
-        // 3. SPIRAL CASTER (purple) - 1 hit, shoots rotating rings
-        // 4. SHIELD ENEMY (cyan) - 2 hits, shoots spread
-        // 5. KAMIKAZE (orange flame) - 1 hit, charges directly at player (no bullets, collision damage)
+        // 1. Normal (red)
+        // 2. Fast (yellow)
+        // 3. SPIRAL CASTER (purple) - rotating rings
+        // 4. SHIELD (cyan) - 2 hits
+        // 5. KAMIKAZE (orange) - charges player
+        // 6. MINER (green) - drops healing orb on death
         
         function spawnEnemy() {
             let rand = Math.random();
-            let spiralChance = Math.min(0.28, 0.10 + Math.floor(score / 600) * 0.05);
-            let shieldChance = Math.min(0.26, 0.10 + Math.floor(score / 500) * 0.04);
-            let kamikazeChance = Math.min(0.28, 0.12 + Math.floor(score / 400) * 0.05);
+            let spiralChance = Math.min(0.24, 0.10 + Math.floor(score / 600) * 0.04);
+            let shieldChance = Math.min(0.22, 0.10 + Math.floor(score / 500) * 0.04);
+            let kamikazeChance = Math.min(0.24, 0.12 + Math.floor(score / 400) * 0.04);
+            let minerChance = Math.min(0.24, 0.12 + Math.floor(score / 350) * 0.04);
             
             // Spiral Caster
             if (rand < spiralChance && score > 80) {
                 let x = 30 + Math.random() * (canvas.width - 60);
                 let y = -35;
-                let radius = 16;
-                let color = '#b266ff';
-                let speedY = 1.4 + waveMod * 0.4;
-                enemies.push({ x, y, radius, hp: 1, color, speedY, type: 'spiral' });
+                enemies.push({ x, y, radius: 16, hp: 1, color: '#b266ff', speedY: 1.4 + waveMod * 0.4, type: 'spiral' });
                 return;
             }
-            
-            // Shield Enemy (2 hits)
+            // Shield Enemy
             if (rand < spiralChance + shieldChance && score > 50) {
                 let x = 30 + Math.random() * (canvas.width - 60);
                 let y = -35;
-                let radius = 16;
-                let color = '#44ddff';
-                let speedY = 1.2 + waveMod * 0.3;
-                enemies.push({ x, y, radius, hp: 2, maxHp: 2, color, speedY, type: 'shield' });
+                enemies.push({ x, y, radius: 16, hp: 2, maxHp: 2, color: '#44ddff', speedY: 1.2 + waveMod * 0.3, type: 'shield' });
                 return;
             }
-            
-            // Kamikaze Enemy (charges at player)
+            // Kamikaze
             if (rand < spiralChance + shieldChance + kamikazeChance && score > 60) {
                 let x = 20 + Math.random() * (canvas.width - 40);
                 let y = -40;
-                let radius = 14;
-                let color = '#ff8844';
-                enemies.push({ 
-                    x, y, radius, hp: 1, color, 
-                    speedY: 0,  // will be overridden by charge logic
-                    type: 'kamikaze',
-                    chargeSpeed: 3.2 + waveMod * 0.5
-                });
+                enemies.push({ x, y, radius: 14, hp: 1, color: '#ff8844', speedY: 0, type: 'kamikaze', chargeSpeed: 4.0 + waveMod * 0.5 });
+                return;
+            }
+            // MINER (drops healing orb)
+            if (rand < spiralChance + shieldChance + kamikazeChance + minerChance && score > 70) {
+                let x = 25 + Math.random() * (canvas.width - 50);
+                let y = -35;
+                enemies.push({ x, y, radius: 14, hp: 1, color: '#66ff66', speedY: 1.3 + waveMod * 0.35, type: 'miner' });
                 return;
             }
             
-            // Normal / Fast enemies (fallback)
+            // Fallback: normal/fast
             let type = Math.random() < 0.7 ? 'normal' : 'fast';
             let x = 25 + Math.random() * (canvas.width - 50);
             let y = -30;
-            let radius = 14;
             let color = type === 'normal' ? '#ff3a6f' : '#ffaa44';
             let speedY = type === 'normal' ? 1.8 + waveMod * 0.6 : 3.2 + waveMod * 0.5;
-            enemies.push({ x, y, radius, hp: 1, color, speedY, type });
+            enemies.push({ x, y, radius: 14, hp: 1, color, speedY, type });
         }
         
-        // Spiral Caster attack
+        // Attack patterns
         function spiralCasterAttack(e, currentFrame) {
             let cx = e.x, cy = e.y;
             let angleStep = (currentFrame * 0.08) % (Math.PI * 2);
@@ -426,75 +429,54 @@
             for (let i = 0; i < bulletCount; i++) {
                 let angle = angleStep + (i / bulletCount) * Math.PI * 2;
                 let speed = 2.2 + waveMod * 0.3;
-                let vx = Math.sin(angle) * speed;
-                let vy = Math.cos(angle) * speed + 0.8;
-                enemyBullets.push({ x: cx, y: cy, radius: 4, vx: vx, vy: vy, isSpiral: true });
+                enemyBullets.push({ x: cx, y: cy, radius: 4, vx: Math.sin(angle) * speed, vy: Math.cos(angle) * speed + 0.8, isSpiral: true });
             }
             if (score > 250) {
-                let bulletCount2 = 8;
                 let angleStep2 = (currentFrame * 0.12) % (Math.PI * 2);
-                for (let i = 0; i < bulletCount2; i++) {
-                    let angle = angleStep2 + (i / bulletCount2) * Math.PI * 2;
+                for (let i = 0; i < 8; i++) {
+                    let angle = angleStep2 + (i / 8) * Math.PI * 2;
                     let speed = 3.0;
-                    let vx = Math.sin(angle) * speed;
-                    let vy = Math.cos(angle) * speed + 0.5;
-                    enemyBullets.push({ x: cx, y: cy, radius: 3.5, vx: vx, vy: vy, isSpiral: true });
+                    enemyBullets.push({ x: cx, y: cy, radius: 3.5, vx: Math.sin(angle) * speed, vy: Math.cos(angle) * speed + 0.5, isSpiral: true });
                 }
             }
         }
         
-        // Shield Enemy attack
-        function shieldEnemyAttack(e, currentFrame) {
+        function shieldEnemyAttack(e) {
             let cx = e.x, cy = e.y;
             for (let ang = -0.8; ang <= 0.81; ang += 0.4) {
-                let dx = Math.sin(ang) * 3.5;
-                let dy = Math.cos(ang) * 2.5 + 1.0;
-                enemyBullets.push({ x: cx, y: cy, radius: 4.2, vx: dx, vy: dy, isShieldBullet: true });
+                enemyBullets.push({ x: cx, y: cy, radius: 4.2, vx: Math.sin(ang) * 3.5, vy: Math.cos(ang) * 2.5 + 1.0, isShieldBullet: true });
             }
-            let dx = player.x - cx;
-            let dy = player.y - cy;
+            let dx = player.x - cx, dy = player.y - cy;
             let len = Math.hypot(dx, dy);
             if (len > 0.01) { dx /= len; dy /= len; }
-            dx *= 4.0;
-            dy *= 3.8;
-            enemyBullets.push({ x: cx, y: cy, radius: 4.5, vx: dx + (Math.random() - 0.5)*0.5, vy: dy + 0.5 });
+            enemyBullets.push({ x: cx, y: cy, radius: 4.5, vx: dx * 4.0 + (Math.random() - 0.5)*0.5, vy: dy * 3.8 + 0.5 });
         }
         
-        // Standard enemy shooting
         function standardEnemyShoot(e, currentFrame) {
             let cx = e.x, cy = e.y;
             let pattern = (Math.floor(currentFrame / 15) % 2 === 0) ? 'spread' : 'aim';
             if (pattern === 'spread') {
                 for (let ang = -0.9; ang <= 0.91; ang += 0.45) {
-                    let dx = Math.sin(ang) * 3.2;
-                    let dy = Math.cos(ang) * 2.3 + 1.2;
-                    enemyBullets.push({ x: cx, y: cy, radius: 4.5, vx: dx, vy: dy });
+                    enemyBullets.push({ x: cx, y: cy, radius: 4.5, vx: Math.sin(ang) * 3.2, vy: Math.cos(ang) * 2.3 + 1.2 });
                 }
                 if (waveMod >= 2) {
                     for (let ang = -0.6; ang <= 0.61; ang += 0.6) {
-                        let dx = Math.sin(ang) * 4.5;
-                        let dy = Math.cos(ang) * 2.0 + 1.0;
-                        enemyBullets.push({ x: cx, y: cy, radius: 4, vx: dx, vy: dy });
+                        enemyBullets.push({ x: cx, y: cy, radius: 4, vx: Math.sin(ang) * 4.5, vy: Math.cos(ang) * 2.0 + 1.0 });
                     }
                 }
             } else {
-                let dx = player.x - cx;
-                let dy = player.y - cy;
+                let dx = player.x - cx, dy = player.y - cy;
                 let len = Math.hypot(dx, dy);
                 if (len > 0.01) { dx /= len; dy /= len; }
-                dx *= 4.5;
-                dy *= 4.2;
-                enemyBullets.push({ x: cx, y: cy, radius: 4.5, vx: dx + (Math.random() - 0.5) * 0.9, vy: dy + 0.8 });
+                enemyBullets.push({ x: cx, y: cy, radius: 4.5, vx: dx * 4.5 + (Math.random() - 0.5) * 0.9, vy: dy * 4.2 + 0.8 });
                 if (e.type === 'fast') {
-                    enemyBullets.push({ x: cx, y: cy, radius: 3.5, vx: dx * 0.9 + (Math.random() - 0.5)*0.7, vy: dy * 0.9 + 0.5 });
+                    enemyBullets.push({ x: cx, y: cy, radius: 3.5, vx: dx * 4.0 + (Math.random() - 0.5)*0.7, vy: dy * 3.8 + 0.5 });
                 }
             }
             if (score > 350 && (currentFrame % 28 === 0)) {
                 for (let a = 0; a < 10; a++) {
                     let angle = (a / 10) * Math.PI * 2;
-                    let vx = Math.sin(angle) * 2.8;
-                    let vy = Math.cos(angle) * 2.2;
-                    enemyBullets.push({ x: cx, y: cy, radius: 3.8, vx: vx, vy: vy });
+                    enemyBullets.push({ x: cx, y: cy, radius: 3.8, vx: Math.sin(angle) * 2.8, vy: Math.cos(angle) * 2.2 });
                 }
             }
         }
@@ -503,6 +485,7 @@
             bullets.push({ x: player.x, y: player.y - 6, radius: 4, vx: 0, vy: -8 });
         }
         
+        // Update game logic
         function updateGame() {
             if (gameState !== 'active') return;
             frame++;
@@ -512,20 +495,16 @@
             
             if (enemySpawnCounter <= 0) {
                 spawnEnemy();
-                let spawnDelay = Math.max(16, 30 - Math.floor(score / 180));
-                enemySpawnCounter = spawnDelay;
+                enemySpawnCounter = Math.max(16, 30 - Math.floor(score / 180));
             } else {
                 enemySpawnCounter--;
             }
             
-            // Update enemies: movement + shooting (Kamikaze charges)
+            // Update enemies: movement + attacks
             for (let i = 0; i < enemies.length; i++) {
                 let e = enemies[i];
-                
-                // Kamikaze: charge directly at player
                 if (e.type === 'kamikaze') {
-                    let dx = player.x - e.x;
-                    let dy = player.y - e.y;
+                    let dx = player.x - e.x, dy = player.y - e.y;
                     let len = Math.hypot(dx, dy);
                     if (len > 0.01) {
                         let speed = e.chargeSpeed || 4.5;
@@ -533,34 +512,22 @@
                         e.y += (dy / len) * speed;
                     }
                 } else {
-                    // Normal vertical movement for other enemies
                     e.y += e.speedY;
                 }
-                
                 if (e.y > canvas.height + 80 || e.y < -90 || e.x < -80 || e.x > canvas.width + 80) {
                     enemies.splice(i,1);
                     i--;
                     continue;
                 }
-                
-                // Shooting patterns (Kamikaze does NOT shoot)
-                if (e.type === 'spiral') {
-                    if (frame % 22 === 0 || (frame % 18 === 0 && score > 200)) {
-                        spiralCasterAttack(e, frame);
-                    }
-                } else if (e.type === 'shield') {
-                    if (frame % 28 === 0) {
-                        shieldEnemyAttack(e, frame);
-                    }
-                } else if (e.type !== 'kamikaze') {
-                    let shootCooldown = (e.type === 'fast') ? 18 : 26;
-                    if (frame % shootCooldown === 0 || (frame % 22 === 0 && e.type === 'normal')) {
-                        standardEnemyShoot(e, frame);
-                    }
+                if (e.type === 'spiral' && (frame % 22 === 0 || (frame % 18 === 0 && score > 200))) spiralCasterAttack(e, frame);
+                else if (e.type === 'shield' && frame % 28 === 0) shieldEnemyAttack(e);
+                else if (e.type !== 'kamikaze' && e.type !== 'miner') {
+                    let cooldown = (e.type === 'fast') ? 18 : 26;
+                    if (frame % cooldown === 0 || (frame % 22 === 0 && e.type === 'normal')) standardEnemyShoot(e, frame);
                 }
             }
             
-            // Player bullets vs enemies (with HP handling)
+            // Player bullets vs enemies + Miner drops healing orb on death
             for (let i = 0; i < bullets.length; i++) {
                 let b = bullets[i];
                 b.x += b.vx;
@@ -573,33 +540,48 @@
                 let hit = false;
                 for (let j = 0; j < enemies.length; j++) {
                     let e = enemies[j];
-                    let dx = b.x - e.x, dy = b.y - e.y;
-                    let dist = Math.hypot(dx, dy);
+                    let dist = Math.hypot(b.x - e.x, b.y - e.y);
                     if (dist < b.radius + e.radius) {
                         e.hp--;
                         if (e.hp <= 0) {
+                            // MINER: drop healing orb
+                            if (e.type === 'miner') {
+                                healthOrbs.push({ x: e.x, y: e.y, radius: 8, life: 120 });
+                            }
                             enemies.splice(j,1);
                             score += 10;
                             updateUI();
                             setHighScore();
-                        } else {
-                            // Shield enemy flash
-                            if (e.type === 'shield') {
-                                e.color = '#ffaa88';
-                                setTimeout(() => { if(e && e.color) e.color = '#44ddff'; }, 50);
-                            }
+                        } else if (e.type === 'shield') {
+                            e.color = '#ffaa88';
+                            setTimeout(() => { if(e && e.color) e.color = '#44ddff'; }, 50);
                         }
                         hit = true;
                         break;
                     }
                 }
-                if (hit) {
-                    bullets.splice(i,1);
+                if (hit) { bullets.splice(i,1); i--; }
+            }
+            
+            // Update healing orbs and collection
+            for (let i = 0; i < healthOrbs.length; i++) {
+                let orb = healthOrbs[i];
+                orb.y += 1.5;
+                orb.life--;
+                let distToPlayer = Math.hypot(player.x - orb.x, player.y - orb.y);
+                if (distToPlayer < player.radius + orb.radius) {
+                    healPlayer(1);
+                    healthOrbs.splice(i,1);
+                    i--;
+                    continue;
+                }
+                if (orb.life <= 0 || orb.y > canvas.height + 50) {
+                    healthOrbs.splice(i,1);
                     i--;
                 }
             }
             
-            // Enemy bullets collision + Kamikaze collision (touching player = damage)
+            // Enemy bullets collision
             for (let i = 0; i < enemyBullets.length; i++) {
                 let eb = enemyBullets[i];
                 eb.x += eb.vx;
@@ -609,33 +591,22 @@
                     i--;
                     continue;
                 }
-                let dx = player.x - eb.x;
-                let dy = player.y - eb.y;
-                let dist = Math.hypot(dx, dy);
-                if (dist < player.radius + eb.radius) {
+                if (Math.hypot(player.x - eb.x, player.y - eb.y) < player.radius + eb.radius) {
                     const died = damagePlayer();
                     enemyBullets.splice(i,1);
                     i--;
                     if (died) return;
-                    continue;
                 }
             }
             
-            // Kamikaze collision with player (direct impact)
+            // Kamikaze collision
             for (let i = 0; i < enemies.length; i++) {
                 let e = enemies[i];
-                if (e.type === 'kamikaze') {
-                    let dx = player.x - e.x;
-                    let dy = player.y - e.y;
-                    let dist = Math.hypot(dx, dy);
-                    if (dist < player.radius + e.radius) {
-                        // Kamikaze explodes on impact and damages player
-                        const died = damagePlayer();
-                        enemies.splice(i,1);
-                        i--;
-                        if (died) return;
-                        break;
-                    }
+                if (e.type === 'kamikaze' && Math.hypot(player.x - e.x, player.y - e.y) < player.radius + e.radius) {
+                    const died = damagePlayer();
+                    enemies.splice(i,1);
+                    if (died) return;
+                    break;
                 }
             }
             
@@ -644,7 +615,7 @@
             waveMod = 1 + Math.floor(score / 350);
         }
         
-        // ---------- DRAWING ----------
+        // DRAWING
         function drawMenu() {
             ctx.fillStyle = '#030318';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -659,14 +630,12 @@
             ctx.fillText('⭐ STAR RANGER ⭐', canvas.width/2 - 210, 160);
             ctx.font = 'bold 28px monospace';
             ctx.fillStyle = '#f0f';
-            ctx.fillText('» kamikaze · spiral · shield «', canvas.width/2 - 230, 250);
+            ctx.fillText('» miner heals · 5 enemy types «', canvas.width/2 - 240, 250);
             ctx.font = '20px "Segoe UI"';
             ctx.fillStyle = '#bbddff';
-            ctx.fillText('⚡ kamikaze charges | 2-hit shield | rotating rings ⚡', canvas.width/2 - 340, 340);
+            ctx.fillText('⚡ Miner drops ❤️ orbs | Kamikaze charges | Shield 2 hits ⚡', canvas.width/2 - 360, 340);
             
-            let btnW = 260, btnH = 65;
-            let btnX = canvas.width/2 - btnW/2;
-            let btnY = 390;
+            let btnW = 260, btnH = 65, btnX = canvas.width/2 - btnW/2, btnY = 390;
             ctx.fillStyle = '#0ff';
             ctx.fillRect(btnX, btnY, btnW, btnH);
             ctx.fillStyle = '#010018';
@@ -674,13 +643,12 @@
             ctx.fillText('▶ START GAME', canvas.width/2 - 98, btnY + 44);
             ctx.fillStyle = '#fff9c0';
             ctx.font = '18px monospace';
-            ctx.fillText('kamikaze charges at you!', canvas.width/2 - 155, 530);
+            ctx.fillText('collect green orbs to heal!', canvas.width/2 - 165, 530);
             ctx.fillStyle = '#88aaff';
             ctx.font = '16px monospace';
             ctx.fillText('🏆 HIGHSCORE: '+highScore, canvas.width/2 - 90, 590);
             
-            let mouseInBounds = (mouseX > btnX && mouseX < btnX+btnW && mouseY > btnY && mouseY < btnY+btnH);
-            if (mouseInBounds) {
+            if (mouseX > btnX && mouseX < btnX+btnW && mouseY > btnY && mouseY < btnY+btnH) {
                 ctx.fillStyle = '#ffffffaa';
                 ctx.fillRect(btnX, btnY, btnW, btnH);
                 ctx.fillStyle = '#000';
@@ -702,16 +670,13 @@
             ctx.fillText('click RESTART or press [R]', canvas.width/2 - 170, 450);
             ctx.fillStyle = '#ffffaa';
             ctx.fillText('🏆 HIGHSCORE: '+highScore, canvas.width/2 - 125, 520);
-            
             let btnX = canvas.width/2 - 110, btnY = 560, btnW = 220, btnH = 55;
             ctx.fillStyle = '#2277aa';
             ctx.fillRect(btnX, btnY, btnW, btnH);
             ctx.fillStyle = 'white';
             ctx.font = 'bold 24px monospace';
             ctx.fillText('⟳ RESTART', btnX+48, btnY+40);
-            
-            let mouseOverBtn = (mouseX > btnX && mouseX < btnX+btnW && mouseY > btnY && mouseY < btnY+btnH);
-            if (mouseOverBtn) {
+            if (mouseX > btnX && mouseX < btnX+btnW && mouseY > btnY && mouseY < btnY+btnH) {
                 ctx.fillStyle = '#55ccff';
                 ctx.fillRect(btnX, btnY, btnW, btnH);
                 ctx.fillStyle = '#000';
@@ -728,7 +693,6 @@
                 ctx.arc((i*131)%canvas.width, (i*57+frame*0.8)%canvas.height, 1.3, 0, Math.PI*2);
                 ctx.fill();
             }
-            
             // enemy bullets
             for (let eb of enemyBullets) {
                 ctx.beginPath();
@@ -743,32 +707,40 @@
                 ctx.shadowColor = eb.isSpiral ? '#aa66ff' : (eb.isShieldBullet ? '#44aaff' : '#ff00aa');
             }
             ctx.shadowBlur = 0;
-            
-            // enemies: Kamikaze has flame trail effect
+            // healing orbs
+            for (let orb of healthOrbs) {
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, orb.radius-2, 0, Math.PI*2);
+                ctx.fillStyle = '#44ff44';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, orb.radius-4, 0, Math.PI*2);
+                ctx.fillStyle = '#aaffaa';
+                ctx.fill();
+                ctx.fillStyle = 'darkgreen';
+                ctx.font = '14px monospace';
+                ctx.fillText('❤️', orb.x-6, orb.y+5);
+            }
+            // enemies
             for (let e of enemies) {
                 ctx.shadowBlur = 7;
-                ctx.shadowColor = e.type === 'spiral' ? '#aa66ff' : (e.type === 'shield' ? '#44ccff' : (e.type === 'kamikaze' ? '#ff8844' : '#ff2060'));
+                ctx.shadowColor = e.type === 'spiral' ? '#aa66ff' : (e.type === 'shield' ? '#44ccff' : (e.type === 'kamikaze' ? '#ff8844' : (e.type === 'miner' ? '#66ff66' : '#ff2060')));
                 ctx.beginPath();
                 ctx.arc(e.x, e.y, e.radius-2, 0, Math.PI*2);
                 ctx.fillStyle = e.color;
                 ctx.fill();
                 ctx.beginPath();
                 ctx.arc(e.x, e.y, e.radius-5, 0, Math.PI*2);
-                ctx.fillStyle = e.type === 'spiral' ? '#e0ccff' : (e.type === 'shield' ? '#ccffff' : (e.type === 'kamikaze' ? '#ffcc88' : 'white'));
+                ctx.fillStyle = e.type === 'spiral' ? '#e0ccff' : (e.type === 'shield' ? '#ccffff' : (e.type === 'kamikaze' ? '#ffcc88' : (e.type === 'miner' ? '#ccffcc' : 'white')));
                 ctx.fill();
                 ctx.fillStyle = 'black';
                 ctx.font = 'bold 16px monospace';
                 if (e.type === 'spiral') ctx.fillText('🌀', e.x-10, e.y+7);
-                else if (e.type === 'shield') {
-                    ctx.fillText('🛡️', e.x-10, e.y+7);
-                    ctx.font = 'bold 12px monospace';
-                    ctx.fillStyle = '#ffffaa';
-                    ctx.fillText(`${e.hp}❤️`, e.x-6, e.y-8);
-                }
+                else if (e.type === 'shield') { ctx.fillText('🛡️', e.x-10, e.y+7); ctx.font = 'bold 12px monospace'; ctx.fillStyle = '#ffffaa'; ctx.fillText(`${e.hp}❤️`, e.x-6, e.y-8); }
                 else if (e.type === 'kamikaze') ctx.fillText('💥', e.x-10, e.y+7);
+                else if (e.type === 'miner') ctx.fillText('⛏️', e.x-10, e.y+7);
                 else ctx.fillText('⚔', e.x-8, e.y+6);
             }
-            
             // player bullets
             for (let b of bullets) {
                 ctx.beginPath();
@@ -780,10 +752,8 @@
                 ctx.fillStyle = 'white';
                 ctx.fill();
             }
-            
-            // Player with invincibility blink
-            let drawPlayer = true;
-            if (invincibleFrames > 0 && (Math.floor(Date.now() / 50) % 3 === 0)) drawPlayer = false;
+            // player
+            let drawPlayer = !(invincibleFrames > 0 && (Math.floor(Date.now() / 50) % 3 === 0));
             if (drawPlayer) {
                 ctx.shadowBlur = 0;
                 ctx.beginPath();
@@ -811,16 +781,15 @@
                 ctx.arc(player.x, player.y, 1.8, 0, Math.PI*2);
                 ctx.fill();
             }
-            
             ctx.fillStyle = '#aaf';
             ctx.font = 'bold 26px "Segoe UI"';
             ctx.fillText(`SCORE ${score}`, 25, 55);
             ctx.fillStyle = '#0ff';
             ctx.font = 'bold 18px monospace';
             ctx.fillText(`HELL LVL ${Math.floor(waveMod)}`, canvas.width-140, 55);
-            ctx.fillStyle = '#ffaa66';
+            ctx.fillStyle = '#88ff88';
             ctx.font = 'bold 14px monospace';
-            ctx.fillText(`💥 KAMIKAZE ACTIVE`, canvas.width-190, 95);
+            ctx.fillText(`⛏️ MINER HEALS`, canvas.width-170, 95);
         }
         
         function render() {
@@ -829,7 +798,6 @@
             else if (gameState === 'gameOver') drawGameOver();
             requestAnimationFrame(render);
         }
-        
         function gameLoop() {
             if (gameState === 'active') updateGame();
             setTimeout(() => requestAnimationFrame(gameLoop), 16);
@@ -839,16 +807,10 @@
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
-            let rawX = (e.clientX - rect.left) * scaleX;
-            let rawY = (e.clientY - rect.top) * scaleY;
-            mouseX = Math.min(canvas.width - 20, Math.max(20, rawX));
-            mouseY = Math.min(canvas.height - 50, Math.max(50, rawY));
-            if (gameState === 'active') {
-                player.x = mouseX;
-                player.y = mouseY;
-            }
+            mouseX = Math.min(canvas.width - 20, Math.max(20, (e.clientX - rect.left) * scaleX));
+            mouseY = Math.min(canvas.height - 50, Math.max(50, (e.clientY - rect.top) * scaleY));
+            if (gameState === 'active') { player.x = mouseX; player.y = mouseY; }
         }
-        
         function handleCanvasClick(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -856,47 +818,21 @@
             let clickX = (e.clientX - rect.left) * scaleX;
             let clickY = (e.clientY - rect.top) * scaleY;
             if (gameState === 'menu') {
-                let btnW = 260, btnH = 65;
-                let btnX = canvas.width/2 - btnW/2;
-                let btnY = 390;
-                if (clickX > btnX && clickX < btnX+btnW && clickY > btnY && clickY < btnY+btnH) {
-                    resetGame();
-                    gameState = 'active';
-                }
+                let btnX = canvas.width/2 - 130, btnY = 390;
+                if (clickX > btnX && clickX < btnX+260 && clickY > btnY && clickY < btnY+65) { resetGame(); gameState = 'active'; }
             } else if (gameState === 'gameOver') {
-                let btnX = canvas.width/2 - 110, btnY = 560, btnW = 220, btnH = 55;
-                if (clickX > btnX && clickX < btnX+btnW && clickY > btnY && clickY < btnY+btnH) {
-                    resetGame();
-                    gameState = 'active';
-                }
+                let btnX = canvas.width/2 - 110, btnY = 560;
+                if (clickX > btnX && clickX < btnX+220 && clickY > btnY && clickY < btnY+55) { resetGame(); gameState = 'active'; }
             }
         }
-        
         function keyHandler(e) {
-            if (e.key === 'r' || e.key === 'R') {
-                e.preventDefault();
-                resetGame();
-                gameState = 'active';
-            }
-            if (e.key === 'Escape' && gameState === 'active') {
-                gameState = 'menu';
-                e.preventDefault();
-            }
+            if (e.key === 'r' || e.key === 'R') { e.preventDefault(); resetGame(); gameState = 'active'; }
+            if (e.key === 'Escape' && gameState === 'active') { gameState = 'menu'; e.preventDefault(); }
         }
         
-        document.getElementById('resetGameBtn').addEventListener('click', () => {
-            resetGame();
-            gameState = 'active';
-        });
-        document.getElementById('playNowBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            resetGame();
-            gameState = 'active';
-        });
-        document.getElementById('fakeDownloadBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('💥 KAMIKAZE ENEMY: charges straight at you! Destroy it before impact. Spiral + Shield enemies remain.');
-        });
+        document.getElementById('resetGameBtn').addEventListener('click', () => { resetGame(); gameState = 'active'; });
+        document.getElementById('playNowBtn').addEventListener('click', (e) => { e.preventDefault(); resetGame(); gameState = 'active'; });
+        document.getElementById('fakeDownloadBtn').addEventListener('click', (e) => { e.preventDefault(); alert('⛏️ MINER ENEMY: drops green healing orbs when destroyed! +1 HP. All 5 enemy types active.'); });
         
         canvas.addEventListener('mousemove', handleMouseMove);
         canvas.addEventListener('click', handleCanvasClick);
