@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>STAR RANGER | Bullet Hell Game</title>
+    <title>STAR RANGER | Spiral Caster · Bullet Hell</title>
     <style>
         * {
             margin: 0;
@@ -237,7 +237,7 @@
     <div class="landing-card">
         <div class="game-title">
             <h1>⭐ STAR RANGER ⭐</h1>
-            <div class="tagline">「 bullet hell · 3-hit survival · 狂気の弾幕 」</div>
+            <div class="tagline">「 spiral caster · 3-hit survival · 狂気の弾幕 」</div>
         </div>
 
         <div class="game-zone">
@@ -262,22 +262,22 @@
             <div class="controls-box">
                 <h3>🎮 CONTROLS & RULES</h3>
                 <ul class="instructions-list">
-                    <li><span class="key-icon">🖱️ MOUSE</span> → Move your ship (tiny hitbox = center dot)</li>
+                    <li><span class="key-icon">🖱️ MOUSE</span> → Move your ship (tiny hitbox)</li>
                     <li><span class="key-icon">💥 AUTO</span> → Continuous laser stream</li>
-                    <li><span class="key-icon">❤️ 3 HITS</span> → You have 3 hearts! Each bullet = 1 damage</li>
+                    <li><span class="key-icon">❤️ 3 HITS</span> → 3 hearts! Each bullet = 1 damage</li>
+                    <li><span class="key-icon">🌀 SPIRAL</span> → New enemy: Spiral Caster (rotating bullet rings)</li>
                     <li><span class="key-icon">✨ +10</span> → Points per enemy kill</li>
-                    <li><span class="key-icon">🌀 WAVE</span> → Projectiles accelerate — true bullet hell</li>
-                    <li><span class="key-icon">🎯 INVINCIBLE</span> → 0.8 sec after hit (blink effect)</li>
+                    <li><span class="key-icon">🎯 INVINCIBLE</span> → 0.8 sec after hit (blink)</li>
                 </ul>
             </div>
             <div class="download-area">
                 <button id="fakeDownloadBtn" class="btn">💾 DOWNLOAD PC BUILD</button>
                 <button id="playNowBtn" class="btn">🎮 PLAY FULLSCREEN</button>
-                <div style="font-size:0.7rem; color:#88aaff;">⚡ 3-hit system — survive longer ⚡</div>
+                <div style="font-size:0.7rem; color:#88aaff;">🌀 Spiral Caster — watch for rotating hell!</div>
             </div>
         </div>
         <div class="footer">
-            <span>⚠️ 3 HITS BEFORE GAME OVER | blink after hit | Press [R] restart, [ESC] menu.</span>
+            <span>⚠️ NEW: Spiral Caster enemy fires beautiful rotating bullet rings! Press [R] restart, [ESC] menu.</span>
         </div>
     </div>
 </div>
@@ -288,31 +288,30 @@
         const ctx = canvas.getContext('2d');
         
         // Game states
-        let gameState = 'menu'; // menu, active, gameOver
+        let gameState = 'menu';
         let score = 0;
         let highScore = localStorage.getItem('starRangerHigh') ? parseInt(localStorage.getItem('starRangerHigh')) : 0;
         
-        // NEW: HP System (3 hits)
+        // HP System (3 hits)
         let playerHp = 3;
-        let invincibleFrames = 0;      // frames after hit (0 = vulnerable)
-        const INVINCIBLE_DURATION = 48; // ~0.8 seconds at 60fps
+        let invincibleFrames = 0;
+        const INVINCIBLE_DURATION = 48;
         
-        // Player: tiny hitbox = 4px for better forgiveness but still intense
+        // Player
         let player = { x: canvas.width/2, y: canvas.height - 80, radius: 4 };
         let enemies = [];
-        let bullets = [];        // player bullets
+        let bullets = [];
         let enemyBullets = [];
         let frame = 0;
         let enemySpawnCounter = 0;
         let mouseX = canvas.width/2, mouseY = canvas.height - 80;
         let waveMod = 1;
         
-        // Helper: Update UI (score + health hearts)
+        // Spiral Caster specific data: track rotation angles per enemy
+        // each spiral enemy stores its own spiralAngle
         function updateUI() {
             const extScore = document.getElementById('externalScore');
             if (extScore) extScore.innerHTML = `⭐ SCORE: ${score}  |  🏆 BEST: ${highScore}`;
-            
-            // Update heart icons
             const hearts = document.querySelectorAll('.health-heart');
             for (let i = 0; i < hearts.length; i++) {
                 if (i < playerHp) {
@@ -333,7 +332,6 @@
             }
         }
         
-        // Full game reset (keeps HP at 3)
         function resetGame() {
             score = 0;
             playerHp = 3;
@@ -350,42 +348,90 @@
             updateUI();
         }
         
-        // Damage handler with invincibility frames
         function damagePlayer() {
-            if (invincibleFrames > 0) return false; // invincible
+            if (invincibleFrames > 0) return false;
             if (playerHp <= 0) return false;
-            
             playerHp--;
             updateUI();
-            
             if (playerHp <= 0) {
-                // Game Over
                 gameState = 'gameOver';
                 setHighScore();
-                return true; // death
+                return true;
             } else {
-                // Trigger invincibility frames
                 invincibleFrames = INVINCIBLE_DURATION;
-                return false; // damaged but alive
+                return false;
             }
         }
         
-        // Spawn enemy
+        // ----- ENEMY TYPES -----
+        // 1. Normal (red)
+        // 2. Fast (yellow)
+        // 3. SPIRAL CASTER (purple) - NEW! fires rotating spiral rings
+        
         function spawnEnemy() {
-            let type = Math.random() < 0.7 ? 'normal' : 'fast';
-            let x = 25 + Math.random() * (canvas.width - 50);
-            let y = -30;
-            let radius = 14;
-            let color = type === 'normal' ? '#ff3a6f' : '#ffaa44';
-            let speedY = type === 'normal' ? 1.8 + waveMod * 0.6 : 3.2 + waveMod * 0.5;
-            enemies.push({ x, y, radius, hp: 1, color, speedY, type });
+            // Spiral Caster spawns with 25% chance when score > 100, otherwise 12% to introduce gradually
+            let rand = Math.random();
+            let spiralChance = Math.min(0.35, 0.12 + Math.floor(score / 600) * 0.05);
+            if (rand < spiralChance && score > 80) {
+                // Spiral Caster
+                let x = 30 + Math.random() * (canvas.width - 60);
+                let y = -35;
+                let radius = 16;
+                let color = '#b266ff'; // purple magic
+                let speedY = 1.4 + waveMod * 0.4;
+                enemies.push({ 
+                    x, y, radius, hp: 1, color, speedY, 
+                    type: 'spiral',
+                    spiralAngle: 0,        // current rotation angle for bullet pattern
+                    spiralFrame: 0
+                });
+            } else {
+                let type = Math.random() < 0.7 ? 'normal' : 'fast';
+                let x = 25 + Math.random() * (canvas.width - 50);
+                let y = -30;
+                let radius = 14;
+                let color = type === 'normal' ? '#ff3a6f' : '#ffaa44';
+                let speedY = type === 'normal' ? 1.8 + waveMod * 0.6 : 3.2 + waveMod * 0.5;
+                enemies.push({ x, y, radius, hp: 1, color, speedY, type });
+            }
         }
         
-        // Enemy shooting patterns (bullet hell)
-        function enemyShootPattern(e, currentFrame) {
+        // Spiral Caster attack: creates a beautiful rotating ring of bullets
+        function spiralCasterAttack(e, currentFrame) {
+            let cx = e.x, cy = e.y;
+            // update spiral angle - rotates over time
+            let angleStep = (currentFrame * 0.08) % (Math.PI * 2);
+            // number of bullets in ring: 12 to 16 depending on difficulty
+            let bulletCount = 12 + Math.floor(waveMod * 2);
+            for (let i = 0; i < bulletCount; i++) {
+                let angle = angleStep + (i / bulletCount) * Math.PI * 2;
+                let speed = 2.2 + waveMod * 0.3;
+                let vx = Math.sin(angle) * speed;
+                let vy = Math.cos(angle) * speed + 0.8;
+                enemyBullets.push({ 
+                    x: cx, y: cy, radius: 4, 
+                    vx: vx, vy: vy,
+                    isSpiral: true
+                });
+            }
+            // extra dense for higher scores: second smaller ring
+            if (score > 250) {
+                let bulletCount2 = 8;
+                let angleStep2 = (currentFrame * 0.12) % (Math.PI * 2);
+                for (let i = 0; i < bulletCount2; i++) {
+                    let angle = angleStep2 + (i / bulletCount2) * Math.PI * 2;
+                    let speed = 3.0;
+                    let vx = Math.sin(angle) * speed;
+                    let vy = Math.cos(angle) * speed + 0.5;
+                    enemyBullets.push({ x: cx, y: cy, radius: 3.5, vx: vx, vy: vy });
+                }
+            }
+        }
+        
+        // Standard enemy shooting patterns (normal & fast)
+        function standardEnemyShoot(e, currentFrame) {
             let cx = e.x, cy = e.y;
             let pattern = (Math.floor(currentFrame / 15) % 2 === 0) ? 'spread' : 'aim';
-            
             if (pattern === 'spread') {
                 for (let ang = -0.9; ang <= 0.91; ang += 0.45) {
                     let dx = Math.sin(ang) * 3.2;
@@ -425,21 +471,13 @@
             bullets.push({ x: player.x, y: player.y - 6, radius: 4, vx: 0, vy: -8 });
         }
         
-        // Game logic update
         function updateGame() {
             if (gameState !== 'active') return;
-            
             frame++;
-            
-            // Decrease invincibility frames
             if (invincibleFrames > 0) invincibleFrames--;
             
-            // Auto-fire
-            if (frame % 4 === 0 || frame % 3 === 0) {
-                shootPlayer();
-            }
+            if (frame % 4 === 0 || frame % 3 === 0) shootPlayer();
             
-            // Enemy spawn
             if (enemySpawnCounter <= 0) {
                 spawnEnemy();
                 let spawnDelay = Math.max(16, 30 - Math.floor(score / 180));
@@ -448,7 +486,7 @@
                 enemySpawnCounter--;
             }
             
-            // Update enemies + shooting
+            // Update enemies + shooting patterns (with spiral caster)
             for (let i = 0; i < enemies.length; i++) {
                 let e = enemies[i];
                 e.y += e.speedY;
@@ -457,9 +495,17 @@
                     i--;
                     continue;
                 }
-                let shootCooldown = (e.type === 'fast') ? 18 : 26;
-                if (frame % shootCooldown === 0 || (frame % 22 === 0 && e.type === 'normal')) {
-                    enemyShootPattern(e, frame);
+                
+                if (e.type === 'spiral') {
+                    // Spiral Caster shoots every 20 frames (beautiful rings)
+                    if (frame % 22 === 0 || (frame % 18 === 0 && score > 200)) {
+                        spiralCasterAttack(e, frame);
+                    }
+                } else {
+                    let shootCooldown = (e.type === 'fast') ? 18 : 26;
+                    if (frame % shootCooldown === 0 || (frame % 22 === 0 && e.type === 'normal')) {
+                        standardEnemyShoot(e, frame);
+                    }
                 }
             }
             
@@ -493,7 +539,7 @@
                 }
             }
             
-            // Enemy bullets collision (with HP & invincibility)
+            // Enemy bullets collision
             for (let i = 0; i < enemyBullets.length; i++) {
                 let eb = enemyBullets[i];
                 eb.x += eb.vx;
@@ -507,29 +553,20 @@
                 let dy = player.y - eb.y;
                 let dist = Math.hypot(dx, dy);
                 if (dist < player.radius + eb.radius) {
-                    // HIT! apply damage
                     const died = damagePlayer();
-                    // remove the bullet that hit
                     enemyBullets.splice(i,1);
                     i--;
-                    if (died) {
-                        // gameState already set to gameOver inside damagePlayer if hp<=0
-                        return;
-                    }
-                    // small knockback / visual effect (no extra action)
+                    if (died) return;
                     continue;
                 }
             }
             
-            // Update player position from mouse
             player.x = Math.min(canvas.width - 20, Math.max(20, mouseX));
             player.y = Math.min(canvas.height - 45, Math.max(50, mouseY));
-            
-            // Difficulty scaling
             waveMod = 1 + Math.floor(score / 350);
         }
         
-        // ---------- DRAWING (with invincibility blink) ----------
+        // ---------- DRAWING (with spiral caster visual flair) ----------
         function drawMenu() {
             ctx.fillStyle = '#030318';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -542,14 +579,13 @@
             ctx.shadowBlur = 0;
             ctx.font = '900 48px "Segoe UI", "Poppins"';
             ctx.fillStyle = '#0ff';
-            ctx.shadowColor = '#0ff';
             ctx.fillText('⭐ STAR RANGER ⭐', canvas.width/2 - 210, 160);
             ctx.font = 'bold 28px monospace';
             ctx.fillStyle = '#f0f';
-            ctx.fillText('» bullet hell gauntlet «', canvas.width/2 - 190, 250);
+            ctx.fillText('» spiral caster unleashed «', canvas.width/2 - 210, 250);
             ctx.font = '20px "Segoe UI"';
             ctx.fillStyle = '#bbddff';
-            ctx.fillText('⚡ mouse to move | 3 hits | auto laser ⚡', canvas.width/2 - 310, 340);
+            ctx.fillText('⚡ mouse move | 3 hits | spiral rings ⚡', canvas.width/2 - 300, 340);
             
             let btnW = 260, btnH = 65;
             let btnX = canvas.width/2 - btnW/2;
@@ -561,7 +597,7 @@
             ctx.fillText('▶ START GAME', canvas.width/2 - 98, btnY + 44);
             ctx.fillStyle = '#fff9c0';
             ctx.font = '18px monospace';
-            ctx.fillText('survive with 3 hearts', canvas.width/2 - 155, 530);
+            ctx.fillText('spiral caster · rotating bullet hell', canvas.width/2 - 175, 530);
             ctx.fillStyle = '#88aaff';
             ctx.font = '16px monospace';
             ctx.fillText('🏆 HIGHSCORE: '+highScore, canvas.width/2 - 90, 590);
@@ -571,7 +607,6 @@
                 ctx.fillStyle = '#ffffffaa';
                 ctx.fillRect(btnX, btnY, btnW, btnH);
                 ctx.fillStyle = '#000';
-                ctx.font = 'bold 28px monospace';
                 ctx.fillText('▶ START GAME', canvas.width/2 - 98, btnY + 44);
             }
         }
@@ -610,7 +645,6 @@
         function drawGame() {
             ctx.fillStyle = '#050510';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            // Stars
             for (let i = 0; i < 280; i++) {
                 ctx.fillStyle = `rgba(255,255,210,${0.4+Math.sin(frame*0.02+i)*0.2})`;
                 ctx.beginPath();
@@ -618,39 +652,43 @@
                 ctx.fill();
             }
             
-            // Enemy bullets
+            // enemy bullets (spiral ones get slight glow)
             for (let eb of enemyBullets) {
                 ctx.beginPath();
                 ctx.arc(eb.x, eb.y, eb.radius-1, 0, Math.PI*2);
-                ctx.fillStyle = '#ff4477';
+                ctx.fillStyle = eb.isSpiral ? '#dd88ff' : '#ff4477';
                 ctx.fill();
                 ctx.beginPath();
                 ctx.arc(eb.x, eb.y, eb.radius-2, 0, Math.PI*2);
-                ctx.fillStyle = '#ff88bb';
+                ctx.fillStyle = eb.isSpiral ? '#f0aaff' : '#ff88bb';
                 ctx.fill();
-                ctx.shadowBlur = 6;
-                ctx.shadowColor = '#ff00aa';
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = eb.isSpiral ? '#aa66ff' : '#ff00aa';
             }
             ctx.shadowBlur = 0;
             
-            // Enemies
+            // Enemies: spiral caster gets unique look
             for (let e of enemies) {
                 ctx.shadowBlur = 7;
-                ctx.shadowColor = '#ff2060';
+                ctx.shadowColor = e.type === 'spiral' ? '#aa66ff' : '#ff2060';
                 ctx.beginPath();
                 ctx.arc(e.x, e.y, e.radius-2, 0, Math.PI*2);
                 ctx.fillStyle = e.color;
                 ctx.fill();
                 ctx.beginPath();
                 ctx.arc(e.x, e.y, e.radius-5, 0, Math.PI*2);
-                ctx.fillStyle = 'white';
+                ctx.fillStyle = e.type === 'spiral' ? '#e0ccff' : 'white';
                 ctx.fill();
                 ctx.fillStyle = 'black';
                 ctx.font = 'bold 16px monospace';
-                ctx.fillText('⚔', e.x-8, e.y+6);
+                if (e.type === 'spiral') {
+                    ctx.fillText('🌀', e.x-10, e.y+7);
+                } else {
+                    ctx.fillText('⚔', e.x-8, e.y+6);
+                }
             }
             
-            // Player bullets
+            // player bullets
             for (let b of bullets) {
                 ctx.beginPath();
                 ctx.arc(b.x, b.y, 4.5, 0, Math.PI*2);
@@ -662,11 +700,9 @@
                 ctx.fill();
             }
             
-            // Player drawing with invincibility blink (alternate alpha)
+            // Player with invincibility blink
             let drawPlayer = true;
-            if (invincibleFrames > 0 && (Math.floor(Date.now() / 50) % 3 === 0)) {
-                drawPlayer = false; // blinking effect
-            }
+            if (invincibleFrames > 0 && (Math.floor(Date.now() / 50) % 3 === 0)) drawPlayer = false;
             if (drawPlayer) {
                 ctx.shadowBlur = 0;
                 ctx.beginPath();
@@ -701,11 +737,9 @@
             ctx.fillStyle = '#0ff';
             ctx.font = 'bold 18px monospace';
             ctx.fillText(`HELL LVL ${Math.floor(waveMod)}`, canvas.width-140, 55);
-            
-            // Draw HP text on canvas too (extra)
-            ctx.fillStyle = '#ffaaaa';
-            ctx.font = 'bold 18px monospace';
-            ctx.fillText(`❤️ x${playerHp}`, canvas.width-100, 110);
+            ctx.fillStyle = '#cc99ff';
+            ctx.font = 'bold 16px monospace';
+            ctx.fillText(`🌀 SPIRAL ACTIVE`, canvas.width-180, 95);
         }
         
         function render() {
@@ -720,7 +754,6 @@
             setTimeout(() => requestAnimationFrame(gameLoop), 16);
         }
         
-        // Event handlers
         function handleMouseMove(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -741,7 +774,6 @@
             const scaleY = canvas.height / rect.height;
             let clickX = (e.clientX - rect.left) * scaleX;
             let clickY = (e.clientY - rect.top) * scaleY;
-            
             if (gameState === 'menu') {
                 let btnW = 260, btnH = 65;
                 let btnX = canvas.width/2 - btnW/2;
@@ -782,7 +814,7 @@
         });
         document.getElementById('fakeDownloadBtn').addEventListener('click', (e) => {
             e.preventDefault();
-            alert('📀 PC Build (Windows/Mac) coming soon! 3-hit survival mode active.');
+            alert('🌀 SPIRAL CASTER UNLEASHED! Watch for purple enemies — they fire beautiful rotating bullet rings. Dodge wisely!');
         });
         
         canvas.addEventListener('mousemove', handleMouseMove);
