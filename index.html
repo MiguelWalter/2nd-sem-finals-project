@@ -1183,7 +1183,19 @@
         
         document.getElementById('resetGameBtn').addEventListener('click', () => { resetGame(); gameState = 'active'; });
         document.getElementById('playNowBtn').addEventListener('click', (e) => { e.preventDefault(); resetGame(); gameState = 'active'; });
-        document.
+        document.getElementById('fakeDownloadBtn').addEventListener('click', (e) => { e.preventDefault(); alert('🔥 ALL 5 POWER-UPS! 50% drop chance from enemies:\n\n💥 DOUBLE SHOT - 2 lasers (10s)\n🛡️ TEMP SHIELD - +1 armor (12s)\n⚡ RAPID FIRE - 2x fire rate (8s)\n💣 NUKE - Clear all enemies!\n💰 2X SCORE - Double points (10s)'); });
+        
+        canvas.addEventListener('mousemove', handleMouseMove);
+        canvas.addEventListener('click', handleCanvasClick);
+        window.addEventListener('keydown', keyHandler);
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+        
+        updateUI();
+        gameState = 'menu';
+        frame = 0;
+        render();
+        gameLoop();
+    })();
 </script>
 </body>
 </html>
