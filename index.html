@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>STAR RANGER | DOUBLE SHOT POWER-UP!</title>
+    <title>STAR RANGER | ALL 5 POWER-UPS! 🔥</title>
     <style>
         * {
             margin: 0;
@@ -121,32 +121,36 @@
             filter: grayscale(0.5);
             opacity: 0.5;
         }
-        .powerup-bar {
+        .powerups-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .powerup-badge {
             background: #000000aa;
             border-radius: 20px;
             padding: 4px 12px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             border: 1px solid #0ff;
             backdrop-filter: blur(4px);
+            font-size: 0.75rem;
         }
-        .powerup-label {
+        .powerup-badge span {
             color: #0ff;
             font-weight: bold;
-            font-size: 0.8rem;
         }
         .powerup-timer {
-            width: 100px;
-            height: 8px;
+            width: 60px;
+            height: 6px;
             background: #333;
-            border-radius: 4px;
+            border-radius: 3px;
             overflow: hidden;
         }
         .powerup-timer-fill {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #0ff, #f0f);
             transition: width 0.1s linear;
         }
         .btn {
@@ -204,7 +208,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
         .key-icon {
             background: #1a1f3a;
@@ -264,6 +268,9 @@
             .health-heart {
                 font-size: 1.2rem;
             }
+            .powerups-container {
+                order: 2;
+            }
         }
         button {
             background: none;
@@ -277,7 +284,7 @@
     <div class="landing-card">
         <div class="game-title">
             <h1>⭐ STAR RANGER ⭐</h1>
-            <div class="tagline">「 DOUBLE SHOT POWER-UP · BOSS FIGHT at 500 pts 」</div>
+            <div class="tagline">「 ALL 5 POWER-UPS! · BOSS FIGHT at 500 pts 」</div>
         </div>
 
         <div class="game-zone">
@@ -294,42 +301,39 @@
                         <span class="health-heart active">❤️</span>
                     </div>
                 </div>
-                <div class="powerup-bar" id="powerupBar" style="display: none;">
-                    <span class="powerup-label">⚡ DOUBLE SHOT</span>
-                    <div class="powerup-timer">
-                        <div class="powerup-timer-fill" id="powerupTimerFill"></div>
-                    </div>
-                </div>
+                <div class="powerups-container" id="powerupsContainer"></div>
                 <button id="resetGameBtn" class="btn">🔄 RESTART</button>
             </div>
         </div>
 
         <div class="bottom-panel">
             <div class="controls-box">
-                <h3>🎮 CONTROLS & POWER-UPS</h3>
+                <h3>🎮 POWER-UPS (50% DROP CHANCE)</h3>
                 <ul class="instructions-list">
-                    <li><span class="key-icon">🖱️ MOUSE</span> → Move ship (tiny hitbox)</li>
-                    <li><span class="key-icon">💥 AUTO</span> → Continuous laser</li>
-                    <li><span class="key-icon">❤️ 3 HITS</span> → Base health</li>
-                    <li><span class="key-icon">⚡ DOUBLE SHOT</span> → Enemies drop (50% chance)! Shoots 2 lasers for 10s</li>
+                    <li><span class="key-icon">🖱️ MOUSE</span> → Move ship</li>
+                    <li><span class="key-icon">💥 DOUBLE SHOT</span> → 2 lasers, 10 sec</li>
+                    <li><span class="key-icon">🛡️ SHIELD</span> → +1 armor, 12 sec</li>
+                    <li><span class="key-icon">⚡ RAPID FIRE</span> → 2x fire rate, 8 sec</li>
+                    <li><span class="key-icon">💣 NUKE</span> → Clear all enemies/bullets!</li>
+                    <li><span class="key-icon">💰 2X SCORE</span> → Double points, 10 sec</li>
                     <li><span class="key-icon">🌀 SPIRAL</span> → Rotating bullet rings</li>
                     <li><span class="key-icon">🛡️ SHIELD</span> → Needs 2 hits</li>
                     <li><span class="key-icon">💥 KAMIKAZE</span> → Charges at you</li>
                     <li><span class="key-icon">⛏️ MINER</span> → Drops ❤️ healing orb</li>
-                    <li><span class="key-icon">👑 BOSS</span> → Spawns at 500 pts! (30 HP, no other enemies)</li>
+                    <li><span class="key-icon">👑 BOSS</span> → Spawns at 500 pts! (30 HP)</li>
                 </ul>
             </div>
             <div class="download-area">
                 <button id="fakeDownloadBtn" class="btn">💾 DOWNLOAD PC BUILD</button>
                 <button id="playNowBtn" class="btn">🎮 PLAY FULLSCREEN</button>
-                <div style="font-size:0.7rem; color:#88aaff;">👑 BOSS FIGHT at 500 points! 💥 50% power-up drop chance!</div>
+                <div style="font-size:0.7rem; color:#88aaff;">🔥 5 POWER-UPS! 50% drop chance from enemies!</div>
             </div>
         </div>
         <div class="footer">
-            <span>⚠️ BOSS: 30 HP, massive bullet patterns. Defeat for +100 bonus! Enemies drop DOUBLE SHOT power-up (50% chance) - 10 seconds of dual lasers!</span>
+            <span>⚠️ BOSS: 30 HP, massive bullet patterns. Defeat for +100 bonus! Each enemy has 50% chance to drop a random power-up!</span>
         </div>
         <div class="developer-credit">
-            🎮 DEVELOPER TEAM | <span>Game Coder:</span> Uy, Miguel Walter P. | <span>Design Coder:</span> Nielmar Josh | <span>Power-Up:</span> DOUBLE SHOT
+            🎮 DEVELOPER TEAM | <span>Game Coder:</span> Uy, Miguel Walter P. | <span>Design Coder:</span> Nielmar Josh | <span>Power-Ups:</span> ALL 5!
         </div>
     </div>
 </div>
@@ -348,16 +352,21 @@
         const INVINCIBLE_DURATION = 48;
         
         // POWER-UP SYSTEM
-        let doubleShotActive = false;
-        let doubleShotTimer = 0;
-        const DOUBLE_SHOT_DURATION = 600; // 10 seconds at 60fps (600 frames)
+        let activePowerups = {
+            doubleShot: { active: false, timer: 0, duration: 600 }, // 10 sec
+            shield: { active: false, timer: 0, duration: 720 },     // 12 sec
+            rapidFire: { active: false, timer: 0, duration: 480 },   // 8 sec
+            scoreMultiplier: { active: false, timer: 0, duration: 600 } // 10 sec
+        };
+        let temporaryShield = false;
+        let tempShieldHp = 0;
         
         let player = { x: canvas.width/2, y: canvas.height - 80, radius: 4 };
         let enemies = [];
         let bullets = [];
         let enemyBullets = [];
         let healthOrbs = [];
-        let powerups = []; // Array for power-up drops
+        let powerups = [];
         let frame = 0;
         let enemySpawnCounter = 0;
         let mouseX = canvas.width/2, mouseY = canvas.height - 80;
@@ -369,30 +378,76 @@
         let bossSpawnTrigger = false;
         let bossDefeatedFlag = false;
         
+        function updatePowerupsUI() {
+            const container = document.getElementById('powerupsContainer');
+            container.innerHTML = '';
+            
+            if (activePowerups.doubleShot.active) {
+                const badge = createPowerupBadge('⚡ DOUBLE', activePowerups.doubleShot.timer, activePowerups.doubleShot.duration, '#ff44ff');
+                container.appendChild(badge);
+            }
+            if (activePowerups.shield.active) {
+                const badge = createPowerupBadge('🛡️ SHIELD', activePowerups.shield.timer, activePowerups.shield.duration, '#44ff44');
+                container.appendChild(badge);
+            }
+            if (activePowerups.rapidFire.active) {
+                const badge = createPowerupBadge('🔥 RAPID', activePowerups.rapidFire.timer, activePowerups.rapidFire.duration, '#ff8844');
+                container.appendChild(badge);
+            }
+            if (activePowerups.scoreMultiplier.active) {
+                const badge = createPowerupBadge('💰 2X', activePowerups.scoreMultiplier.timer, activePowerups.scoreMultiplier.duration, '#ffdd44');
+                container.appendChild(badge);
+            }
+            if (temporaryShield) {
+                const badge = document.createElement('div');
+                badge.className = 'powerup-badge';
+                badge.style.borderColor = '#44ff44';
+                badge.innerHTML = `<span>🛡️ ARMOR +1</span>`;
+                container.appendChild(badge);
+            }
+        }
+        
+        function createPowerupBadge(name, timer, duration, color) {
+            const div = document.createElement('div');
+            div.className = 'powerup-badge';
+            div.style.borderColor = color;
+            const percent = (timer / duration) * 100;
+            div.innerHTML = `
+                <span>${name}</span>
+                <div class="powerup-timer">
+                    <div class="powerup-timer-fill" style="width: ${percent}%; background: ${color};"></div>
+                </div>
+            `;
+            return div;
+        }
+        
         function updateUI() {
             const extScore = document.getElementById('externalScore');
-            if (extScore) extScore.innerHTML = `⭐ SCORE: ${score}  |  🏆 BEST: ${highScore}`;
+            let displayScore = score;
+            if (activePowerups.scoreMultiplier.active) {
+                extScore.innerHTML = `⭐ SCORE: ${displayScore}  |  🏆 BEST: ${highScore}  |  💰 2X ACTIVE!`;
+            } else {
+                extScore.innerHTML = `⭐ SCORE: ${displayScore}  |  🏆 BEST: ${highScore}`;
+            }
             const hearts = document.querySelectorAll('.health-heart');
+            let totalHealth = playerHp + (temporaryShield ? 1 : 0);
             for (let i = 0; i < hearts.length; i++) {
-                if (i < playerHp) {
+                if (i < totalHealth) {
                     hearts[i].classList.add('active');
                     hearts[i].classList.remove('lost');
+                    if (i >= playerHp && temporaryShield) {
+                        hearts[i].style.color = '#44ff44';
+                        hearts[i].style.textShadow = '0 0 6px #44ff44';
+                    } else {
+                        hearts[i].style.color = '';
+                        hearts[i].style.textShadow = '';
+                    }
                 } else {
                     hearts[i].classList.remove('active');
                     hearts[i].classList.add('lost');
                 }
             }
-            
-            // Update power-up UI
-            const powerupBar = document.getElementById('powerupBar');
-            const powerupTimerFill = document.getElementById('powerupTimerFill');
-            if (doubleShotActive && doubleShotTimer > 0) {
-                powerupBar.style.display = 'flex';
-                let percent = (doubleShotTimer / DOUBLE_SHOT_DURATION) * 100;
-                powerupTimerFill.style.width = percent + '%';
-            } else {
-                powerupBar.style.display = 'none';
-            }
+            updatePowerupsUI();
         }
         
         function setHighScore() {
@@ -403,6 +458,16 @@
             }
         }
         
+        function addScore(amount) {
+            let finalAmount = amount;
+            if (activePowerups.scoreMultiplier.active) {
+                finalAmount = amount * 2;
+            }
+            score += finalAmount;
+            updateUI();
+            setHighScore();
+        }
+        
         function healPlayer(amount = 1) {
             if (playerHp < 3) {
                 playerHp = Math.min(3, playerHp + amount);
@@ -410,10 +475,50 @@
             }
         }
         
-        // Activate DOUBLE SHOT power-up
-        function activateDoubleShot() {
-            doubleShotActive = true;
-            doubleShotTimer = DOUBLE_SHOT_DURATION;
+        function activatePowerup(type) {
+            switch(type) {
+                case 'doubleShot':
+                    activePowerups.doubleShot.active = true;
+                    activePowerups.doubleShot.timer = activePowerups.doubleShot.duration;
+                    break;
+                case 'shield':
+                    activePowerups.shield.active = true;
+                    activePowerups.shield.timer = activePowerups.shield.duration;
+                    break;
+                case 'rapidFire':
+                    activePowerups.rapidFire.active = true;
+                    activePowerups.rapidFire.timer = activePowerups.rapidFire.duration;
+                    break;
+                case 'scoreMultiplier':
+                    activePowerups.scoreMultiplier.active = true;
+                    activePowerups.scoreMultiplier.timer = activePowerups.scoreMultiplier.duration;
+                    break;
+                case 'nuke':
+                    // Clear all enemies and enemy bullets
+                    enemies = [];
+                    enemyBullets = [];
+                    // Visual feedback
+                    break;
+                case 'tempShield':
+                    if (!temporaryShield && playerHp < 3) {
+                        temporaryShield = true;
+                        tempShieldHp = 1;
+                        updateUI();
+                    }
+                    break;
+            }
+            updateUI();
+        }
+        
+        function updatePowerups() {
+            for (let key in activePowerups) {
+                if (activePowerups[key].active) {
+                    activePowerups[key].timer--;
+                    if (activePowerups[key].timer <= 0) {
+                        activePowerups[key].active = false;
+                    }
+                }
+            }
             updateUI();
         }
         
@@ -430,8 +535,12 @@
             bossActive = false;
             bossSpawnTrigger = false;
             bossDefeatedFlag = false;
-            doubleShotActive = false;
-            doubleShotTimer = 0;
+            temporaryShield = false;
+            tempShieldHp = 0;
+            for (let key in activePowerups) {
+                activePowerups[key].active = false;
+                activePowerups[key].timer = 0;
+            }
             frame = 0;
             enemySpawnCounter = 8;
             waveMod = 1;
@@ -443,6 +552,16 @@
         
         function damagePlayer() {
             if (invincibleFrames > 0) return false;
+            
+            // Check temporary shield first
+            if (temporaryShield) {
+                temporaryShield = false;
+                tempShieldHp = 0;
+                invincibleFrames = INVINCIBLE_DURATION / 2;
+                updateUI();
+                return false;
+            }
+            
             if (playerHp <= 0) return false;
             playerHp--;
             updateUI();
@@ -456,7 +575,6 @@
             }
         }
         
-        // Spawn BOSS
         function spawnBoss() {
             boss = {
                 x: canvas.width / 2,
@@ -464,18 +582,15 @@
                 radius: 40,
                 hp: 30,
                 maxHp: 30,
-                type: 'boss',
-                phase: 0,
-                shootTimer: 0
+                type: 'boss'
             };
             bossActive = true;
             bossSpawnTrigger = true;
             enemies = [];
             enemyBullets = [];
-            powerups = []; // Clear power-ups during boss fight
+            powerups = [];
         }
         
-        // Boss attack patterns
         function bossAttack() {
             if (!boss) return;
             let cx = boss.x, cy = boss.y;
@@ -522,7 +637,6 @@
             }
         }
         
-        // Spawn normal enemies
         function spawnEnemy() {
             if (bossActive) return;
             
@@ -556,7 +670,6 @@
             enemies.push({ x, y, radius: 14, hp: 1, color, speedY, type });
         }
         
-        // Attack patterns for enemies
         function spiralCasterAttack(e) {
             let cx = e.x, cy = e.y;
             let angleStep = (frame * 0.08) % (Math.PI * 2);
@@ -603,45 +716,30 @@
             }
         }
         
-        // MODIFIED: Shoot Player with DOUBLE SHOT support
         function shootPlayer() {
-            if (doubleShotActive) {
-                // Double shot: two bullets slightly angled
+            if (activePowerups.doubleShot.active) {
                 bullets.push({ x: player.x - 5, y: player.y - 6, radius: 4, vx: -0.8, vy: -8 });
                 bullets.push({ x: player.x + 5, y: player.y - 6, radius: 4, vx: 0.8, vy: -8 });
             } else {
-                // Normal single shot
                 bullets.push({ x: player.x, y: player.y - 6, radius: 4, vx: 0, vy: -8 });
             }
         }
         
-        // Main update
         function updateGame() {
             if (gameState !== 'active') return;
             frame++;
             if (invincibleFrames > 0) invincibleFrames--;
             
-            // Update power-up timers
-            if (doubleShotActive) {
-                doubleShotTimer--;
-                if (doubleShotTimer <= 0) {
-                    doubleShotActive = false;
-                    updateUI();
-                } else {
-                    updateUI();
-                }
-            }
+            updatePowerups();
             
-            // BOSS TRIGGER
             if (score >= 500 && !bossActive && !bossDefeatedFlag && !bossSpawnTrigger) {
                 spawnBoss();
             }
             
-            // Auto-fire (faster with double shot feels more powerful)
-            let fireRate = doubleShotActive ? 3 : 4;
-            if (frame % fireRate === 0 || (doubleShotActive && frame % 3 === 0)) shootPlayer();
+            let fireRate = 4;
+            if (activePowerups.rapidFire.active) fireRate = 2;
+            if (frame % fireRate === 0) shootPlayer();
             
-            // Normal enemy spawning
             if (!bossActive) {
                 if (enemySpawnCounter <= 0) {
                     spawnEnemy();
@@ -651,14 +749,11 @@
                 }
             }
             
-            // BOSS update
             if (bossActive && boss) {
                 boss.x = canvas.width/2 + Math.sin(frame * 0.02) * 60;
                 boss.y = 80 + Math.sin(frame * 0.03) * 20;
                 
-                if (frame % 20 === 0) {
-                    bossAttack();
-                }
+                if (frame % 20 === 0) bossAttack();
                 
                 for (let i = 0; i < bullets.length; i++) {
                     let b = bullets[i];
@@ -671,9 +766,7 @@
                             bossActive = false;
                             boss = null;
                             bossDefeatedFlag = true;
-                            score += 100;
-                            updateUI();
-                            setHighScore();
+                            addScore(100);
                             enemyBullets = [];
                         }
                         break;
@@ -687,7 +780,6 @@
                 }
             }
             
-            // Update normal enemies
             if (!bossActive) {
                 for (let i = 0; i < enemies.length; i++) {
                     let e = enemies[i];
@@ -716,7 +808,6 @@
                 }
             }
             
-            // Player bullets vs normal enemies + POWER-UP DROP (50% chance)
             for (let i = 0; i < bullets.length; i++) {
                 let b = bullets[i];
                 b.x += b.vx;
@@ -732,21 +823,21 @@
                     if (Math.hypot(b.x - e.x, b.y - e.y) < b.radius + e.radius) {
                         e.hp--;
                         if (e.hp <= 0) {
-                            // 50% chance to drop DOUBLE SHOT power-up
+                            // 50% chance to drop a random power-up
                             if (Math.random() < 0.5) {
+                                const powerupTypes = ['doubleShot', 'shield', 'rapidFire', 'scoreMultiplier', 'tempShield', 'nuke'];
+                                const randomType = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
                                 powerups.push({ 
                                     x: e.x, 
                                     y: e.y, 
                                     radius: 10, 
-                                    type: 'doubleShot',
-                                    life: 180  // 3 seconds to collect
+                                    type: randomType,
+                                    life: 180
                                 });
                             }
                             if (e.type === 'miner') healthOrbs.push({ x: e.x, y: e.y, radius: 8, life: 120 });
                             enemies.splice(j,1);
-                            score += 10;
-                            updateUI();
-                            setHighScore();
+                            addScore(10);
                         } else if (e.type === 'shield') {
                             e.color = '#ffaa88';
                             setTimeout(() => { if(e && e.color) e.color = '#44ddff'; }, 50);
@@ -758,15 +849,12 @@
                 if (hit) { bullets.splice(i,1); i--; }
             }
             
-            // Power-up collection
             for (let i = 0; i < powerups.length; i++) {
                 let p = powerups[i];
                 p.y += 1.5;
                 p.life--;
                 if (Math.hypot(player.x - p.x, player.y - p.y) < player.radius + p.radius) {
-                    if (p.type === 'doubleShot') {
-                        activateDoubleShot();
-                    }
+                    activatePowerup(p.type);
                     powerups.splice(i,1);
                     i--;
                     continue;
@@ -777,7 +865,6 @@
                 }
             }
             
-            // Healing orbs
             for (let i = 0; i < healthOrbs.length; i++) {
                 let orb = healthOrbs[i];
                 orb.y += 1.5;
@@ -794,7 +881,6 @@
                 }
             }
             
-            // Enemy bullets collision
             for (let i = 0; i < enemyBullets.length; i++) {
                 let eb = enemyBullets[i];
                 eb.x += eb.vx;
@@ -812,7 +898,6 @@
                 }
             }
             
-            // Kamikaze collision
             for (let i = 0; i < enemies.length; i++) {
                 let e = enemies[i];
                 if (e.type === 'kamikaze' && Math.hypot(player.x - e.x, player.y - e.y) < player.radius + e.radius) {
@@ -828,7 +913,6 @@
             waveMod = 1 + Math.floor(score / 350);
         }
         
-        // DRAWING
         function drawGame() {
             ctx.fillStyle = '#050510';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -839,7 +923,6 @@
                 ctx.fill();
             }
             
-            // enemy bullets
             for (let eb of enemyBullets) {
                 ctx.beginPath();
                 ctx.arc(eb.x, eb.y, eb.radius-1, 0, Math.PI*2);
@@ -853,23 +936,31 @@
             }
             ctx.shadowBlur = 0;
             
-            // Power-ups drawing
             for (let p of powerups) {
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.radius-2, 0, Math.PI*2);
-                ctx.fillStyle = '#0ff';
+                let color, icon;
+                switch(p.type) {
+                    case 'doubleShot': color = '#ff44ff'; icon = '⚡'; break;
+                    case 'shield': color = '#44ff44'; icon = '🛡️'; break;
+                    case 'rapidFire': color = '#ff8844'; icon = '🔥'; break;
+                    case 'scoreMultiplier': color = '#ffdd44'; icon = '💰'; break;
+                    case 'tempShield': color = '#44ff44'; icon = '🛡️'; break;
+                    case 'nuke': color = '#ff4444'; icon = '💣'; break;
+                    default: color = '#0ff'; icon = '?';
+                }
+                ctx.fillStyle = color;
                 ctx.fill();
-                ctx.fillStyle = 'cyan';
-                ctx.font = 'bold 16px monospace';
-                ctx.fillText('⚡', p.x-6, p.y+5);
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 18px monospace';
+                ctx.fillText(icon, p.x-7, p.y+7);
                 ctx.shadowBlur = 8;
-                ctx.fillStyle = '#00ffffaa';
+                ctx.fillStyle = color + 'aa';
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.radius+2, 0, Math.PI*2);
                 ctx.fill();
             }
             
-            // healing orbs
             for (let orb of healthOrbs) {
                 ctx.beginPath();
                 ctx.arc(orb.x, orb.y, orb.radius-2, 0, Math.PI*2);
@@ -880,7 +971,6 @@
                 ctx.fillText('❤️', orb.x-6, orb.y+5);
             }
             
-            // BOSS drawing
             if (bossActive && boss) {
                 ctx.shadowBlur = 12;
                 ctx.shadowColor = '#ff6600';
@@ -903,7 +993,6 @@
                 ctx.fillText('VOID TITAN', boss.x-45, boss.y-45);
             }
             
-            // normal enemies
             for (let e of enemies) {
                 ctx.shadowBlur = 7;
                 ctx.beginPath();
@@ -923,18 +1012,16 @@
                 else ctx.fillText('⚔', e.x-8, e.y+6);
             }
             
-            // player bullets
             for (let b of bullets) {
                 ctx.beginPath();
                 ctx.arc(b.x, b.y, 4.5, 0, Math.PI*2);
-                ctx.fillStyle = doubleShotActive ? '#ff66ff' : '#0ff';
+                ctx.fillStyle = activePowerups.doubleShot.active ? '#ff66ff' : '#0ff';
                 ctx.fill();
             }
             
-            // player with double shot glow effect
             let drawPlayer = !(invincibleFrames > 0 && (Math.floor(Date.now() / 50) % 3 === 0));
             if (drawPlayer) {
-                if (doubleShotActive) {
+                if (activePowerups.doubleShot.active) {
                     ctx.shadowBlur = 15;
                     ctx.shadowColor = '#ff00ff';
                     ctx.beginPath();
@@ -942,20 +1029,26 @@
                     ctx.fillStyle = '#ff00ff44';
                     ctx.fill();
                 }
+                if (activePowerups.rapidFire.active) {
+                    ctx.beginPath();
+                    ctx.arc(player.x, player.y, player.radius+4, 0, Math.PI*2);
+                    ctx.fillStyle = '#ff880044';
+                    ctx.fill();
+                }
                 ctx.beginPath();
                 ctx.arc(player.x, player.y, player.radius+2.5, 0, Math.PI*2);
-                ctx.fillStyle = doubleShotActive ? '#ff88ffaa' : '#88ddffaa';
+                ctx.fillStyle = activePowerups.doubleShot.active ? '#ff88ffaa' : '#88ddffaa';
                 ctx.fill();
                 ctx.beginPath();
                 ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
-                ctx.fillStyle = doubleShotActive ? '#ff44ff' : '#0ff';
+                ctx.fillStyle = activePowerups.doubleShot.active ? '#ff44ff' : '#0ff';
                 ctx.fill();
                 ctx.beginPath();
                 ctx.moveTo(player.x-11, player.y);
                 ctx.lineTo(player.x+11, player.y);
                 ctx.moveTo(player.x, player.y-11);
                 ctx.lineTo(player.x, player.y+11);
-                ctx.strokeStyle = doubleShotActive ? '#ff44ff' : '#0ff';
+                ctx.strokeStyle = activePowerups.doubleShot.active ? '#ff44ff' : '#0ff';
                 ctx.lineWidth = 1.8;
                 ctx.stroke();
                 ctx.fillStyle = 'red';
@@ -973,10 +1066,10 @@
                 ctx.font = 'bold 20px monospace';
                 ctx.fillText(`⚔️ BOSS FIGHT ⚔️`, canvas.width-180, 55);
             }
-            if (doubleShotActive) {
-                ctx.fillStyle = '#ff88ff';
-                ctx.font = 'bold 18px monospace';
-                ctx.fillText(`⚡ DOUBLE SHOT ⚡`, canvas.width-200, 95);
+            if (activePowerups.scoreMultiplier.active) {
+                ctx.fillStyle = '#ffdd44';
+                ctx.font = 'bold 20px monospace';
+                ctx.fillText(`💰 2X SCORE!`, canvas.width-160, 95);
             }
         }
         
@@ -991,25 +1084,26 @@
             }
             ctx.font = '900 48px "Segoe UI"';
             ctx.fillStyle = '#0ff';
-            ctx.fillText('⭐ STAR RANGER ⭐', canvas.width/2 - 210, 160);
-            ctx.font = 'bold 28px monospace';
+            ctx.fillText('⭐ STAR RANGER ⭐', canvas.width/2 - 210, 120);
+            ctx.font = 'bold 26px monospace';
             ctx.fillStyle = '#f0f';
-            ctx.fillText('» DOUBLE SHOT POWER-UP! «', canvas.width/2 - 250, 250);
-            ctx.font = '20px "Segoe UI"';
+            ctx.fillText('» ALL 5 POWER-UPS! «', canvas.width/2 - 210, 200);
+            ctx.font = '18px "Segoe UI"';
             ctx.fillStyle = '#bbddff';
-            ctx.fillText('⚡ Enemies drop power-ups (50% chance)! Dual lasers for 10s! ⚡', canvas.width/2 - 350, 340);
-            let btnW = 260, btnH = 65, btnX = canvas.width/2 - btnW/2, btnY = 390;
+            ctx.fillText('💥 DOUBLE SHOT  |  🛡️ TEMP SHIELD  |  ⚡ RAPID FIRE', canvas.width/2 - 320, 260);
+            ctx.fillText('💣 NUKE (CLEAR SCREEN)  |  💰 2X SCORE MULTIPLIER', canvas.width/2 - 300, 300);
+            let btnW = 260, btnH = 65, btnX = canvas.width/2 - btnW/2, btnY = 360;
             ctx.fillStyle = '#0ff';
             ctx.fillRect(btnX, btnY, btnW, btnH);
             ctx.fillStyle = '#010018';
             ctx.font = 'bold 28px monospace';
             ctx.fillText('▶ START GAME', canvas.width/2 - 98, btnY + 44);
             ctx.fillStyle = '#fff9c0';
-            ctx.font = '18px monospace';
-            ctx.fillText('reach 500 points to summon the boss!', canvas.width/2 - 190, 530);
+            ctx.font = '16px monospace';
+            ctx.fillText('50% power-up drop chance from enemies!', canvas.width/2 - 190, 490);
             ctx.fillStyle = '#88aaff';
             ctx.font = '16px monospace';
-            ctx.fillText('🏆 HIGHSCORE: '+highScore, canvas.width/2 - 90, 590);
+            ctx.fillText('🏆 HIGHSCORE: '+highScore, canvas.width/2 - 90, 550);
             if (mouseX > btnX && mouseX < btnX+btnW && mouseY > btnY && mouseY < btnY+btnH) {
                 ctx.fillStyle = '#ffffffaa';
                 ctx.fillRect(btnX, btnY, btnW, btnH);
@@ -1074,7 +1168,7 @@
             let clickX = (e.clientX - rect.left) * scaleX;
             let clickY = (e.clientY - rect.top) * scaleY;
             if (gameState === 'menu') {
-                let btnX = canvas.width/2 - 130, btnY = 390;
+                let btnX = canvas.width/2 - 130, btnY = 360;
                 if (clickX > btnX && clickX < btnX+260 && clickY > btnY && clickY < btnY+65) { resetGame(); gameState = 'active'; }
             } else if (gameState === 'gameOver') {
                 let btnX = canvas.width/2 - 110, btnY = 560;
@@ -1089,7 +1183,7 @@
         
         document.getElementById('resetGameBtn').addEventListener('click', () => { resetGame(); gameState = 'active'; });
         document.getElementById('playNowBtn').addEventListener('click', (e) => { e.preventDefault(); resetGame(); gameState = 'active'; });
-        document.getElementById('fakeDownloadBtn').addEventListener('click', (e) => { e.preventDefault(); alert('⚡ DOUBLE SHOT POWER-UP: 50% drop chance from enemies! Dual lasers for 10 seconds!'); });
+        document.getElementById('fakeDownloadBtn').addEventListener('click', (e) => { e.preventDefault(); alert('🔥 ALL 5 POWER-UPS! 50% drop chance from enemies:\n\n💥 DOUBLE SHOT - 2 lasers (10s)\n🛡️ TEMP SHIELD - +1 armor (12s)\n⚡ RAPID FIRE - 2x fire rate (8s)\n💣 NUKE - Clear all enemies!\n💰 2X SCORE - Double points (10s)'); });
         
         canvas.addEventListener('mousemove', handleMouseMove);
         canvas.addEventListener('click', handleCanvasClick);
