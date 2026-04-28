@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>STAR RANGER | BOSS FIGHT + 5 Enemies</title>
+    <title>STAR RANGER | DOUBLE SHOT POWER-UP!</title>
     <style>
         * {
             margin: 0;
@@ -120,6 +120,34 @@
             color: #442222;
             filter: grayscale(0.5);
             opacity: 0.5;
+        }
+        .powerup-bar {
+            background: #000000aa;
+            border-radius: 20px;
+            padding: 4px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #0ff;
+            backdrop-filter: blur(4px);
+        }
+        .powerup-label {
+            color: #0ff;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        .powerup-timer {
+            width: 100px;
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .powerup-timer-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #0ff, #f0f);
+            transition: width 0.1s linear;
         }
         .btn {
             background: linear-gradient(95deg, #0a0f2a, #001d3d);
@@ -249,7 +277,7 @@
     <div class="landing-card">
         <div class="game-title">
             <h1>⭐ STAR RANGER ⭐</h1>
-            <div class="tagline">「 BOSS FIGHT at 500 pts · 5 enemy types · bullet hell 」</div>
+            <div class="tagline">「 DOUBLE SHOT POWER-UP · BOSS FIGHT at 500 pts 」</div>
         </div>
 
         <div class="game-zone">
@@ -266,17 +294,24 @@
                         <span class="health-heart active">❤️</span>
                     </div>
                 </div>
+                <div class="powerup-bar" id="powerupBar" style="display: none;">
+                    <span class="powerup-label">⚡ DOUBLE SHOT</span>
+                    <div class="powerup-timer">
+                        <div class="powerup-timer-fill" id="powerupTimerFill"></div>
+                    </div>
+                </div>
                 <button id="resetGameBtn" class="btn">🔄 RESTART</button>
             </div>
         </div>
 
         <div class="bottom-panel">
             <div class="controls-box">
-                <h3>🎮 CONTROLS & RULES</h3>
+                <h3>🎮 CONTROLS & POWER-UPS</h3>
                 <ul class="instructions-list">
                     <li><span class="key-icon">🖱️ MOUSE</span> → Move ship (tiny hitbox)</li>
                     <li><span class="key-icon">💥 AUTO</span> → Continuous laser</li>
                     <li><span class="key-icon">❤️ 3 HITS</span> → Base health</li>
+                    <li><span class="key-icon">⚡ DOUBLE SHOT</span> → Enemies drop (50% chance)! Shoots 2 lasers for 10s</li>
                     <li><span class="key-icon">🌀 SPIRAL</span> → Rotating bullet rings</li>
                     <li><span class="key-icon">🛡️ SHIELD</span> → Needs 2 hits</li>
                     <li><span class="key-icon">💥 KAMIKAZE</span> → Charges at you</li>
@@ -287,14 +322,14 @@
             <div class="download-area">
                 <button id="fakeDownloadBtn" class="btn">💾 DOWNLOAD PC BUILD</button>
                 <button id="playNowBtn" class="btn">🎮 PLAY FULLSCREEN</button>
-                <div style="font-size:0.7rem; color:#88aaff;">👑 BOSS FIGHT at 500 points! Defeat the VOID TITAN.</div>
+                <div style="font-size:0.7rem; color:#88aaff;">👑 BOSS FIGHT at 500 points! 💥 50% power-up drop chance!</div>
             </div>
         </div>
         <div class="footer">
-            <span>⚠️ BOSS: 30 HP, massive bullet patterns. No other enemies spawn during boss fight. +100 bonus on defeat!</span>
+            <span>⚠️ BOSS: 30 HP, massive bullet patterns. Defeat for +100 bonus! Enemies drop DOUBLE SHOT power-up (50% chance) - 10 seconds of dual lasers!</span>
         </div>
         <div class="developer-credit">
-            🎮 DEVELOPER TEAM | <span>Game Coder:</span> Uy, Miguel Walter P. | <span>Design Coder:</span> Nielmar Josh
+            🎮 DEVELOPER TEAM | <span>Game Coder:</span> Uy, Miguel Walter P. | <span>Design Coder:</span> Nielmar Josh | <span>Power-Up:</span> DOUBLE SHOT
         </div>
     </div>
 </div>
@@ -312,11 +347,17 @@
         let invincibleFrames = 0;
         const INVINCIBLE_DURATION = 48;
         
+        // POWER-UP SYSTEM
+        let doubleShotActive = false;
+        let doubleShotTimer = 0;
+        const DOUBLE_SHOT_DURATION = 600; // 10 seconds at 60fps (600 frames)
+        
         let player = { x: canvas.width/2, y: canvas.height - 80, radius: 4 };
         let enemies = [];
         let bullets = [];
         let enemyBullets = [];
         let healthOrbs = [];
+        let powerups = []; // Array for power-up drops
         let frame = 0;
         let enemySpawnCounter = 0;
         let mouseX = canvas.width/2, mouseY = canvas.height - 80;
@@ -341,6 +382,17 @@
                     hearts[i].classList.add('lost');
                 }
             }
+            
+            // Update power-up UI
+            const powerupBar = document.getElementById('powerupBar');
+            const powerupTimerFill = document.getElementById('powerupTimerFill');
+            if (doubleShotActive && doubleShotTimer > 0) {
+                powerupBar.style.display = 'flex';
+                let percent = (doubleShotTimer / DOUBLE_SHOT_DURATION) * 100;
+                powerupTimerFill.style.width = percent + '%';
+            } else {
+                powerupBar.style.display = 'none';
+            }
         }
         
         function setHighScore() {
@@ -358,6 +410,13 @@
             }
         }
         
+        // Activate DOUBLE SHOT power-up
+        function activateDoubleShot() {
+            doubleShotActive = true;
+            doubleShotTimer = DOUBLE_SHOT_DURATION;
+            updateUI();
+        }
+        
         function resetGame() {
             score = 0;
             playerHp = 3;
@@ -366,10 +425,13 @@
             bullets = [];
             enemyBullets = [];
             healthOrbs = [];
+            powerups = [];
             boss = null;
             bossActive = false;
             bossSpawnTrigger = false;
             bossDefeatedFlag = false;
+            doubleShotActive = false;
+            doubleShotTimer = 0;
             frame = 0;
             enemySpawnCounter = 8;
             waveMod = 1;
@@ -394,7 +456,7 @@
             }
         }
         
-        // Spawn BOSS (replaces all enemies, no other spawns)
+        // Spawn BOSS
         function spawnBoss() {
             boss = {
                 x: canvas.width / 2,
@@ -408,19 +470,17 @@
             };
             bossActive = true;
             bossSpawnTrigger = true;
-            // Clear all existing enemies
             enemies = [];
-            // Clear existing enemy bullets for clean fight
             enemyBullets = [];
+            powerups = []; // Clear power-ups during boss fight
         }
         
-        // Boss attack patterns (intense bullet hell)
+        // Boss attack patterns
         function bossAttack() {
             if (!boss) return;
             let cx = boss.x, cy = boss.y;
             let pattern = Math.floor(frame / 30) % 4;
             
-            // Pattern 1: Radial burst
             if (pattern === 0) {
                 for (let i = 0; i < 16; i++) {
                     let angle = (i / 16) * Math.PI * 2 + frame * 0.05;
@@ -428,7 +488,6 @@
                     enemyBullets.push({ x: cx, y: cy, radius: 5, vx: Math.sin(angle) * speed, vy: Math.cos(angle) * speed, isBossBullet: true });
                 }
             }
-            // Pattern 2: Aimed + spread
             else if (pattern === 1) {
                 let dx = player.x - cx, dy = player.y - cy;
                 let len = Math.hypot(dx, dy);
@@ -439,7 +498,6 @@
                     enemyBullets.push({ x: cx, y: cy, radius: 4.5, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, isBossBullet: true });
                 }
             }
-            // Pattern 3: Spiral rings (like spiral caster but bigger)
             else if (pattern === 2) {
                 let angleStep = frame * 0.1;
                 for (let i = 0; i < 20; i++) {
@@ -448,7 +506,6 @@
                     enemyBullets.push({ x: cx, y: cy, radius: 4, vx: Math.sin(angle) * speed, vy: Math.cos(angle) * speed + 1.0, isBossBullet: true });
                 }
             }
-            // Pattern 4: Cross + diagonal
             else {
                 let angles = [0, Math.PI/2, Math.PI, 3*Math.PI/2, Math.PI/4, 3*Math.PI/4, 5*Math.PI/4, 7*Math.PI/4];
                 for (let ang of angles) {
@@ -457,7 +514,6 @@
                 }
             }
             
-            // Extra: when boss HP below 15, add more bullets
             if (boss.hp < 15 && frame % 15 === 0) {
                 for (let i = 0; i < 12; i++) {
                     let angle = (i / 12) * Math.PI * 2 + frame * 0.1;
@@ -466,9 +522,9 @@
             }
         }
         
-        // Spawn normal enemies (only if boss is NOT active)
+        // Spawn normal enemies
         function spawnEnemy() {
-            if (bossActive) return; // No other enemies during boss fight
+            if (bossActive) return;
             
             let rand = Math.random();
             let spiralChance = Math.min(0.24, 0.10 + Math.floor(score / 600) * 0.04);
@@ -500,7 +556,7 @@
             enemies.push({ x, y, radius: 14, hp: 1, color, speedY, type });
         }
         
-        // Attack patterns for normal enemies
+        // Attack patterns for enemies
         function spiralCasterAttack(e) {
             let cx = e.x, cy = e.y;
             let angleStep = (frame * 0.08) % (Math.PI * 2);
@@ -547,8 +603,16 @@
             }
         }
         
+        // MODIFIED: Shoot Player with DOUBLE SHOT support
         function shootPlayer() {
-            bullets.push({ x: player.x, y: player.y - 6, radius: 4, vx: 0, vy: -8 });
+            if (doubleShotActive) {
+                // Double shot: two bullets slightly angled
+                bullets.push({ x: player.x - 5, y: player.y - 6, radius: 4, vx: -0.8, vy: -8 });
+                bullets.push({ x: player.x + 5, y: player.y - 6, radius: 4, vx: 0.8, vy: -8 });
+            } else {
+                // Normal single shot
+                bullets.push({ x: player.x, y: player.y - 6, radius: 4, vx: 0, vy: -8 });
+            }
         }
         
         // Main update
@@ -557,15 +621,27 @@
             frame++;
             if (invincibleFrames > 0) invincibleFrames--;
             
-            // BOSS TRIGGER: when score reaches 500 and boss not active and not defeated
+            // Update power-up timers
+            if (doubleShotActive) {
+                doubleShotTimer--;
+                if (doubleShotTimer <= 0) {
+                    doubleShotActive = false;
+                    updateUI();
+                } else {
+                    updateUI();
+                }
+            }
+            
+            // BOSS TRIGGER
             if (score >= 500 && !bossActive && !bossDefeatedFlag && !bossSpawnTrigger) {
                 spawnBoss();
             }
             
-            // Auto-fire
-            if (frame % 4 === 0 || frame % 3 === 0) shootPlayer();
+            // Auto-fire (faster with double shot feels more powerful)
+            let fireRate = doubleShotActive ? 3 : 4;
+            if (frame % fireRate === 0 || (doubleShotActive && frame % 3 === 0)) shootPlayer();
             
-            // Normal enemy spawning (only if no boss)
+            // Normal enemy spawning
             if (!bossActive) {
                 if (enemySpawnCounter <= 0) {
                     spawnEnemy();
@@ -577,16 +653,13 @@
             
             // BOSS update
             if (bossActive && boss) {
-                // Boss movement: slight sine wave
                 boss.x = canvas.width/2 + Math.sin(frame * 0.02) * 60;
                 boss.y = 80 + Math.sin(frame * 0.03) * 20;
                 
-                // Boss shooting every 20 frames
                 if (frame % 20 === 0) {
                     bossAttack();
                 }
                 
-                // Boss collision with player bullets
                 for (let i = 0; i < bullets.length; i++) {
                     let b = bullets[i];
                     let dist = Math.hypot(b.x - boss.x, b.y - boss.y);
@@ -595,21 +668,18 @@
                         bullets.splice(i,1);
                         i--;
                         if (boss.hp <= 0) {
-                            // BOSS DEFEATED
                             bossActive = false;
                             boss = null;
                             bossDefeatedFlag = true;
-                            score += 100; // BONUS
+                            score += 100;
                             updateUI();
                             setHighScore();
-                            // Clear remaining boss bullets
                             enemyBullets = [];
                         }
                         break;
                     }
                 }
                 
-                // Boss collision with player
                 if (boss && Math.hypot(player.x - boss.x, player.y - boss.y) < player.radius + boss.radius) {
                     const died = damagePlayer();
                     if (died) return;
@@ -617,7 +687,7 @@
                 }
             }
             
-            // Update normal enemies (only if no boss)
+            // Update normal enemies
             if (!bossActive) {
                 for (let i = 0; i < enemies.length; i++) {
                     let e = enemies[i];
@@ -646,7 +716,7 @@
                 }
             }
             
-            // Player bullets vs normal enemies
+            // Player bullets vs normal enemies + POWER-UP DROP (50% chance)
             for (let i = 0; i < bullets.length; i++) {
                 let b = bullets[i];
                 b.x += b.vx;
@@ -662,6 +732,16 @@
                     if (Math.hypot(b.x - e.x, b.y - e.y) < b.radius + e.radius) {
                         e.hp--;
                         if (e.hp <= 0) {
+                            // 50% chance to drop DOUBLE SHOT power-up
+                            if (Math.random() < 0.5) {
+                                powerups.push({ 
+                                    x: e.x, 
+                                    y: e.y, 
+                                    radius: 10, 
+                                    type: 'doubleShot',
+                                    life: 180  // 3 seconds to collect
+                                });
+                            }
                             if (e.type === 'miner') healthOrbs.push({ x: e.x, y: e.y, radius: 8, life: 120 });
                             enemies.splice(j,1);
                             score += 10;
@@ -676,6 +756,25 @@
                     }
                 }
                 if (hit) { bullets.splice(i,1); i--; }
+            }
+            
+            // Power-up collection
+            for (let i = 0; i < powerups.length; i++) {
+                let p = powerups[i];
+                p.y += 1.5;
+                p.life--;
+                if (Math.hypot(player.x - p.x, player.y - p.y) < player.radius + p.radius) {
+                    if (p.type === 'doubleShot') {
+                        activateDoubleShot();
+                    }
+                    powerups.splice(i,1);
+                    i--;
+                    continue;
+                }
+                if (p.life <= 0 || p.y > canvas.height + 50) {
+                    powerups.splice(i,1);
+                    i--;
+                }
             }
             
             // Healing orbs
@@ -729,7 +828,7 @@
             waveMod = 1 + Math.floor(score / 350);
         }
         
-        // DRAWING (includes boss)
+        // DRAWING
         function drawGame() {
             ctx.fillStyle = '#050510';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -753,6 +852,22 @@
                 ctx.shadowBlur = 5;
             }
             ctx.shadowBlur = 0;
+            
+            // Power-ups drawing
+            for (let p of powerups) {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius-2, 0, Math.PI*2);
+                ctx.fillStyle = '#0ff';
+                ctx.fill();
+                ctx.fillStyle = 'cyan';
+                ctx.font = 'bold 16px monospace';
+                ctx.fillText('⚡', p.x-6, p.y+5);
+                ctx.shadowBlur = 8;
+                ctx.fillStyle = '#00ffffaa';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius+2, 0, Math.PI*2);
+                ctx.fill();
+            }
             
             // healing orbs
             for (let orb of healthOrbs) {
@@ -812,33 +927,42 @@
             for (let b of bullets) {
                 ctx.beginPath();
                 ctx.arc(b.x, b.y, 4.5, 0, Math.PI*2);
-                ctx.fillStyle = '#0ff';
+                ctx.fillStyle = doubleShotActive ? '#ff66ff' : '#0ff';
                 ctx.fill();
             }
             
-            // player
+            // player with double shot glow effect
             let drawPlayer = !(invincibleFrames > 0 && (Math.floor(Date.now() / 50) % 3 === 0));
             if (drawPlayer) {
+                if (doubleShotActive) {
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#ff00ff';
+                    ctx.beginPath();
+                    ctx.arc(player.x, player.y, player.radius+5, 0, Math.PI*2);
+                    ctx.fillStyle = '#ff00ff44';
+                    ctx.fill();
+                }
                 ctx.beginPath();
                 ctx.arc(player.x, player.y, player.radius+2.5, 0, Math.PI*2);
-                ctx.fillStyle = '#88ddffaa';
+                ctx.fillStyle = doubleShotActive ? '#ff88ffaa' : '#88ddffaa';
                 ctx.fill();
                 ctx.beginPath();
                 ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
-                ctx.fillStyle = '#0ff';
+                ctx.fillStyle = doubleShotActive ? '#ff44ff' : '#0ff';
                 ctx.fill();
                 ctx.beginPath();
                 ctx.moveTo(player.x-11, player.y);
                 ctx.lineTo(player.x+11, player.y);
                 ctx.moveTo(player.x, player.y-11);
                 ctx.lineTo(player.x, player.y+11);
-                ctx.strokeStyle = '#0ff';
+                ctx.strokeStyle = doubleShotActive ? '#ff44ff' : '#0ff';
                 ctx.lineWidth = 1.8;
                 ctx.stroke();
                 ctx.fillStyle = 'red';
                 ctx.beginPath();
                 ctx.arc(player.x, player.y, 1.8, 0, Math.PI*2);
                 ctx.fill();
+                ctx.shadowBlur = 0;
             }
             
             ctx.fillStyle = '#aaf';
@@ -849,9 +973,13 @@
                 ctx.font = 'bold 20px monospace';
                 ctx.fillText(`⚔️ BOSS FIGHT ⚔️`, canvas.width-180, 55);
             }
+            if (doubleShotActive) {
+                ctx.fillStyle = '#ff88ff';
+                ctx.font = 'bold 18px monospace';
+                ctx.fillText(`⚡ DOUBLE SHOT ⚡`, canvas.width-200, 95);
+            }
         }
         
-        // Menu and Game Over draw functions (same as before, shortened for space)
         function drawMenu() {
             ctx.fillStyle = '#030318';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -866,10 +994,10 @@
             ctx.fillText('⭐ STAR RANGER ⭐', canvas.width/2 - 210, 160);
             ctx.font = 'bold 28px monospace';
             ctx.fillStyle = '#f0f';
-            ctx.fillText('» BOSS FIGHT at 500 pts «', canvas.width/2 - 230, 250);
+            ctx.fillText('» DOUBLE SHOT POWER-UP! «', canvas.width/2 - 250, 250);
             ctx.font = '20px "Segoe UI"';
             ctx.fillStyle = '#bbddff';
-            ctx.fillText('⚡ Defeat the VOID TITAN! +100 bonus ⚡', canvas.width/2 - 300, 340);
+            ctx.fillText('⚡ Enemies drop power-ups (50% chance)! Dual lasers for 10s! ⚡', canvas.width/2 - 350, 340);
             let btnW = 260, btnH = 65, btnX = canvas.width/2 - btnW/2, btnY = 390;
             ctx.fillStyle = '#0ff';
             ctx.fillRect(btnX, btnY, btnW, btnH);
@@ -961,7 +1089,7 @@
         
         document.getElementById('resetGameBtn').addEventListener('click', () => { resetGame(); gameState = 'active'; });
         document.getElementById('playNowBtn').addEventListener('click', (e) => { e.preventDefault(); resetGame(); gameState = 'active'; });
-        document.getElementById('fakeDownloadBtn').addEventListener('click', (e) => { e.preventDefault(); alert('👑 BOSS FIGHT: Reach 500 points to summon the VOID TITAN (30 HP). No other enemies spawn during boss fight. +100 bonus on victory!'); });
+        document.getElementById('fakeDownloadBtn').addEventListener('click', (e) => { e.preventDefault(); alert('⚡ DOUBLE SHOT POWER-UP: 50% drop chance from enemies! Dual lasers for 10 seconds!'); });
         
         canvas.addEventListener('mousemove', handleMouseMove);
         canvas.addEventListener('click', handleCanvasClick);
