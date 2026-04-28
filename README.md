@@ -77,11 +77,11 @@ Survive enemy waves, reach 500 points, defeat the VOID TITAN, and achieve the hi
 
 | Main Menu | In-Game Action |
 |-----------|----------------|
-| ![Main Menu](Screenshots/Main Menu.png) | ![Gameplay](Screenshots/Gameplay.png) |
+| ![Main Menu](Screenshots/MainMenu.png) | ![Gameplay](Screenshots/Gameplay.png) |
 
 | Boss Fight | Game Over |
 |------------|-----------|
-| ![Boss](Screenshots/Boss) | ![Game Over](Screenshots/Game Over.png) |
+| ![Boss](Screenshots/Boss) | ![Game Over](Screenshots/GameOver.png) |
 
 ---
 
