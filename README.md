@@ -9,7 +9,7 @@
 > **Defeat enemies, survive bullet hell, and summon the VOID TITAN!**  
 > A complete arcade-style space shooter with 5 enemy types, boss battles, and intense bullet patterns – **playable instantly in your browser**.
 
-![Gameplay Screenshot](Screenshots/Game.png)
+![Gameplay Screenshot](Screenshots/Gameplay.png)
 
 ---
 
