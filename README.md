@@ -3,8 +3,8 @@
 
 # ⭐ STAR RANGER – Boss Fight Bullet Hell Game
 
-[![Play on GitHub Pages](https://img.shields.io/badge/Play%20Now-GitHub%20Pages-brightgreen?style=for-the-badge&logo=github)](https://MiguelWalter.github.io/STAR-RANGER/)
-[![Status](https://img.shields.io/badge/status-live-success)](https://MiguelWalter.github.io/STAR-RANGER/)
+[![Play on GitHub Pages](https://img.shields.io/badge/Play%20Now-GitHub%20Pages-brightgreen?style=for-the-badge&logo=github)](https://miguelwalter.github.io/2nd-sem-finals-project/)
+[![Status](https://img.shields.io/badge/status-live-success)](https://miguelwalter.github.io/2nd-sem-finals-project/)
 
 > **Defeat enemies, survive bullet hell, and summon the VOID TITAN!**  
 > A complete arcade-style space shooter with 5 enemy types, boss battles, and intense bullet patterns – **playable instantly in your browser**.
@@ -16,7 +16,7 @@
 ## 🎮 Play Now – No Installation Required
 
 The game is hosted live on **GitHub Pages**. Open:  
-🔗 **[https://MiguelWalter.github.io/STAR-RANGER/](https://MiguelWalter.github.io/STAR-RANGER/)**
+🔗 **[https://MiguelWalter.github.io/STAR-RANGER/](https://miguelwalter.github.io/2nd-sem-finals-project/)**
 
 - Works on desktop, tablet, and mobile browsers.
 - No login, no download – just pure arcade action.
