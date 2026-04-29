@@ -135,7 +135,7 @@ Inspired by classic arcade shooters like Galaga and Touhou Project
 
 Built with vanilla JavaScript – no external game engines
 
-⭐ If you enjoy the game, give it a star on GitHub! ⭐
+⭐ If you enjoy the game, give it a star on GitHub!! ⭐
 
 text
 
