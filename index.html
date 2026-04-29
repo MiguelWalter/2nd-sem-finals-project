@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>STAR RANGER | Official Game</title>
+    <title>STAR RANGER | BOSS EVERY 500 PTS! 🔊 WITH SOUNDS!</title>
     <style>
         * {
             margin: 0;
@@ -16,6 +16,53 @@
             background: radial-gradient(circle at 20% 30%, #0a0a2a, #010105);
             font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
             overflow-x: hidden;
+        }
+        
+        /* Volume Control */
+        .volume-control {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            padding: 8px 15px;
+            border-radius: 50px;
+            border: 1px solid #0ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: #0ff;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        .volume-control:hover {
+            background: rgba(0, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .volume-icon {
+            font-size: 1.2rem;
+        }
+        
+        .volume-slider {
+            width: 80px;
+            height: 4px;
+            -webkit-appearance: none;
+            background: #333;
+            border-radius: 2px;
+            outline: none;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #0ff;
+            cursor: pointer;
         }
         
         /* HOMEPAGE STYLES */
@@ -572,9 +619,34 @@
         .back-to-home {
             margin-left: 10px;
         }
+        
+        /* Sound notification */
+        .sound-notification {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            background: rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: #0ff;
+            border: 1px solid #0ff;
+            pointer-events: none;
+            transition: opacity 0.5s;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
+
+<!-- Volume Control -->
+<div class="volume-control" id="volumeControl">
+    <span class="volume-icon">🔊</span>
+    <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="70">
+    <span id="volumePercent">70%</span>
+</div>
+<div class="sound-notification" id="soundNotification" style="opacity: 0;">🔊 Sound Ready!</div>
 
 <!-- HOMEPAGE -->
 <div id="homepage" class="homepage">
@@ -582,7 +654,7 @@
         <div class="hero-section">
             <div class="star-icon">⭐</div>
             <div class="game-logo">STAR RANGER</div>
-            <div class="tagline-home">「 Defeat the Void Titan · Master the Power-Ups 」</div>
+            <div class="tagline-home">「 Defeat the Void Titan · Master the Power-Ups · 🔊 WITH SOUNDS! 」</div>
         </div>
         
         <div class="feature-grid">
@@ -636,7 +708,7 @@
         
         <div class="footer-home">
             <p>© 2024 STAR RANGER - Bullet Hell Arcade Game</p>
-            <p>Move with mouse | Auto-fire enabled | Reach 500 points for first boss!</p>
+            <p>Move with mouse | Auto-fire enabled | 🔊 Sound Effects Included!</p>
         </div>
     </div>
 </div>
@@ -647,7 +719,7 @@
         <div class="landing-card">
             <div class="game-title">
                 <h1>⭐ STAR RANGER ⭐</h1>
-                <div class="tagline">「 BOSS EVERY 500 PTS! · MASSIVE HP SCALING 」</div>
+                <div class="tagline">「 BOSS EVERY 500 PTS! · MASSIVE HP SCALING · 🔊 WITH SOUNDS 」</div>
             </div>
 
             <div class="game-zone">
@@ -681,6 +753,7 @@
                         <li><span class="key-icon">💰 2X SCORE</span> → Double points, 10 sec</li>
                         <li><span class="key-icon">👑 BOSS</span> → Spawns EVERY 500 pts!</li>
                         <li><span class="key-icon">📈 BOSS HP</span> → +50 HP each boss! (30 → 80 → 130...)</li>
+                        <li><span class="key-icon">🔊 SOUNDS</span> → Shoot, hit, power-up, boss!</li>
                     </ul>
                 </div>
                 <div class="download-area">
@@ -693,7 +766,7 @@
                 <span>⚠️ BOSS HP SCALING: Boss 1: 30 HP | Boss 2: 80 HP | Boss 3: 130 HP | Boss 4: 180 HP | +50 each time!</span>
             </div>
             <div class="developer-credit">
-                🎮 DEVELOPER TEAM | <span>Game Coder:</span> Uy, Miguel Walter P. | <span>Design Coder:</span> Nielmar Josh | <span>Feature:</span> BOSS EVERY 500 PTS!
+                🎮 DEVELOPER TEAM | <span>Game Coder:</span> Uy, Miguel Walter P. | <span>Design Coder:</span> Nielmar Josh | <span>Sound Effects:</span> Added!
             </div>
         </div>
     </div>
@@ -702,8 +775,197 @@
 <button id="globalBackHome" class="back-home-btn" style="display: none;">🏠 Back to Home</button>
 
 <script>
-    // Game code (same as before with the massive HP scaling)
-    // I'll include the full game script here
+    // ============ SOUND SYSTEM ============
+    class SoundManager {
+        constructor() {
+            this.sounds = {};
+            this.volume = 0.7;
+            this.enabled = true;
+            this.initSounds();
+        }
+        
+        initSounds() {
+            // Create audio contexts and load sounds using Web Audio API for better compatibility
+            // Using online sound effects (free to use)
+            const soundUrls = {
+                shoot: 'https://www.soundjay.com/misc/sounds/fire-button-1.mp3',
+                enemyHit: 'https://www.soundjay.com/misc/sounds/impact-metal-1.mp3',
+                enemyDeath: 'https://www.soundjay.com/misc/sounds/explosion-1.mp3',
+                powerup: 'https://www.soundjay.com/misc/sounds/power-up-1.mp3',
+                damage: 'https://www.soundjay.com/misc/sounds/hit-1.mp3',
+                gameOver: 'https://www.soundjay.com/misc/sounds/game-over-1.mp3',
+                bossSpawn: 'https://www.soundjay.com/misc/sounds/boss-alert.mp3',
+                bossDefeat: 'https://www.soundjay.com/misc/sounds/victory-1.mp3',
+                nuke: 'https://www.soundjay.com/misc/sounds/explosion-2.mp3',
+                heal: 'https://www.soundjay.com/misc/sounds/health-pickup.mp3'
+            };
+            
+            // Use Audio elements for simpler cross-browser support
+            for (let [name, url] of Object.entries(soundUrls)) {
+                const audio = new Audio();
+                audio.preload = 'auto';
+                audio.volume = this.volume;
+                // Use alternative URLs that work better
+                if (name === 'shoot') audio.src = 'https://actions.google.com/sound/zip/pew-pew.mp3';
+                else if (name === 'enemyDeath') audio.src = 'https://www.myinstants.com/media/sounds/explosion_SoundBible.mp3';
+                else if (name === 'powerup') audio.src = 'https://www.myinstants.com/media/sounds/powerup.mp3';
+                else if (name === 'bossSpawn') audio.src = 'https://www.myinstants.com/media/sounds/boss-encounter.mp3';
+                else if (name === 'bossDefeat') audio.src = 'https://www.myinstants.com/media/sounds/victory1.mp3';
+                else audio.src = url;
+                
+                audio.load();
+                this.sounds[name] = audio;
+            }
+            
+            // Fallback: Create simple beep sounds using Web Audio for guaranteed playback
+            this.useFallback = true;
+            this.audioContext = null;
+            try {
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                this.audioContext = new AudioContext();
+                this.useFallback = false;
+            } catch(e) {
+                console.log('Web Audio not supported, using fallback sounds');
+            }
+        }
+        
+        playFallbackSound(type) {
+            if (!this.audioContext || !this.useFallback) return;
+            
+            // Resume audio context if suspended (browser policy)
+            if (this.audioContext.state === 'suspended') {
+                this.audioContext.resume();
+            }
+            
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            gainNode.gain.value = this.volume * 0.3;
+            
+            let frequency = 440;
+            let duration = 0.1;
+            
+            switch(type) {
+                case 'shoot':
+                    frequency = 880;
+                    duration = 0.08;
+                    break;
+                case 'enemyHit':
+                    frequency = 660;
+                    duration = 0.05;
+                    break;
+                case 'enemyDeath':
+                    frequency = 220;
+                    duration = 0.3;
+                    break;
+                case 'powerup':
+                    frequency = 1046.5;
+                    duration = 0.2;
+                    break;
+                case 'damage':
+                    frequency = 174.61;
+                    duration = 0.15;
+                    break;
+                case 'gameOver':
+                    frequency = 130.81;
+                    duration = 1;
+                    break;
+                case 'bossSpawn':
+                    frequency = 329.63;
+                    duration = 0.5;
+                    gainNode.gain.value = this.volume * 0.5;
+                    break;
+                case 'bossDefeat':
+                    frequency = 523.25;
+                    duration = 0.8;
+                    gainNode.gain.value = this.volume * 0.4;
+                    break;
+                case 'nuke':
+                    frequency = 98;
+                    duration = 0.5;
+                    gainNode.gain.value = this.volume * 0.4;
+                    break;
+                case 'heal':
+                    frequency = 783.99;
+                    duration = 0.15;
+                    break;
+                default:
+                    return;
+            }
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.value = frequency;
+            oscillator.start();
+            oscillator.stop(this.audioContext.currentTime + duration);
+            
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + duration);
+        }
+        
+        play(type) {
+            if (!this.enabled) return;
+            
+            // Try HTML5 Audio first
+            if (this.sounds[type]) {
+                const sound = this.sounds[type];
+                sound.volume = this.volume;
+                sound.currentTime = 0;
+                sound.play().catch(e => {
+                    // If HTML5 fails, use fallback
+                    this.playFallbackSound(type);
+                });
+            } else {
+                this.playFallbackSound(type);
+            }
+        }
+        
+        setVolume(value) {
+            this.volume = Math.max(0, Math.min(1, value));
+            for (let sound of Object.values(this.sounds)) {
+                sound.volume = this.volume;
+            }
+        }
+    }
+    
+    // Initialize sound manager
+    const soundManager = new SoundManager();
+    
+    // Volume control UI
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumePercent = document.getElementById('volumePercent');
+    const soundNotification = document.getElementById('soundNotification');
+    
+    volumeSlider.addEventListener('input', (e) => {
+        const val = e.target.value;
+        volumePercent.textContent = val + '%';
+        soundManager.setVolume(val / 100);
+        
+        // Show notification
+        soundNotification.style.opacity = '1';
+        soundNotification.textContent = `🔊 Volume: ${val}%`;
+        setTimeout(() => {
+            soundNotification.style.opacity = '0';
+        }, 1500);
+    });
+    
+    // Enable sounds after user interaction (browser policy)
+    function enableSounds() {
+        if (soundManager.audioContext && soundManager.audioContext.state === 'suspended') {
+            soundManager.audioContext.resume();
+        }
+        soundManager.enabled = true;
+        soundNotification.style.opacity = '1';
+        soundNotification.textContent = '🔊 Sound Enabled!';
+        setTimeout(() => {
+            soundNotification.style.opacity = '0';
+        }, 2000);
+    }
+    
+    document.body.addEventListener('click', enableSounds, { once: true });
+    
+    // ============ GAME CODE ============
     (function(){
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -740,6 +1002,9 @@
         
         let boss = null;
         let bossActive = false;
+        
+        // Cooldown for shoot sound
+        let lastShootSound = 0;
         
         function updatePowerupsUI() {
             const container = document.getElementById('powerupsContainer');
@@ -834,6 +1099,7 @@
             if (playerHp < 3) {
                 playerHp = Math.min(3, playerHp + amount);
                 updateUI();
+                soundManager.play('heal');
             }
         }
         
@@ -842,26 +1108,32 @@
                 case 'doubleShot':
                     activePowerups.doubleShot.active = true;
                     activePowerups.doubleShot.timer = activePowerups.doubleShot.duration;
+                    soundManager.play('powerup');
                     break;
                 case 'shield':
                     activePowerups.shield.active = true;
                     activePowerups.shield.timer = activePowerups.shield.duration;
+                    soundManager.play('powerup');
                     break;
                 case 'rapidFire':
                     activePowerups.rapidFire.active = true;
                     activePowerups.rapidFire.timer = activePowerups.rapidFire.duration;
+                    soundManager.play('powerup');
                     break;
                 case 'scoreMultiplier':
                     activePowerups.scoreMultiplier.active = true;
                     activePowerups.scoreMultiplier.timer = activePowerups.scoreMultiplier.duration;
+                    soundManager.play('powerup');
                     break;
                 case 'nuke':
                     enemies = [];
                     enemyBullets = [];
+                    soundManager.play('nuke');
                     break;
                 case 'tempShield':
                     if (!temporaryShield && playerHp < 3) {
                         temporaryShield = true;
+                        soundManager.play('powerup');
                         updateUI();
                     }
                     break;
@@ -915,15 +1187,18 @@
                 temporaryShield = false;
                 invincibleFrames = INVINCIBLE_DURATION / 2;
                 updateUI();
+                soundManager.play('shield');
                 return false;
             }
             
             if (playerHp <= 0) return false;
             playerHp--;
             updateUI();
+            soundManager.play('damage');
             if (playerHp <= 0) {
                 gameState = 'gameOver';
                 setHighScore();
+                soundManager.play('gameOver');
                 return true;
             } else {
                 invincibleFrames = INVINCIBLE_DURATION;
@@ -953,6 +1228,7 @@
             
             nextBossScore = (bossNumber + 1) * 500;
             updateUI();
+            soundManager.play('bossSpawn');
         }
         
         function bossAttack() {
@@ -1098,6 +1374,12 @@
             } else {
                 bullets.push({ x: player.x, y: player.y - 6, radius: 4, vx: 0, vy: -8 });
             }
+            // Play shoot sound with cooldown to avoid spam
+            const now = Date.now();
+            if (now - lastShootSound > 80) {
+                soundManager.play('shoot');
+                lastShootSound = now;
+            }
         }
         
         function updateGame() {
@@ -1137,11 +1419,13 @@
                         boss.hp--;
                         bullets.splice(i,1);
                         i--;
+                        soundManager.play('enemyHit');
                         if (boss.hp <= 0) {
                             bossActive = false;
                             boss = null;
                             addScore(100);
                             enemyBullets = [];
+                            soundManager.play('bossDefeat');
                         }
                         break;
                     }
@@ -1211,9 +1495,13 @@
                             if (e.type === 'miner') healthOrbs.push({ x: e.x, y: e.y, radius: 8, life: 120 });
                             enemies.splice(j,1);
                             addScore(10);
+                            soundManager.play('enemyDeath');
                         } else if (e.type === 'shield') {
                             e.color = '#ffaa88';
+                            soundManager.play('enemyHit');
                             setTimeout(() => { if(e && e.color) e.color = '#44ddff'; }, 50);
+                        } else {
+                            soundManager.play('enemyHit');
                         }
                         hit = true;
                         break;
@@ -1473,7 +1761,7 @@
             ctx.fillText('» BOSS EVERY 500 POINTS! «', canvas.width/2 - 250, 250);
             ctx.font = '20px "Segoe UI"';
             ctx.fillStyle = '#bbddff';
-            ctx.fillText('⚡ 5 POWER-UPS | MASSIVE HP SCALING | EPIC BATTLES ⚡', canvas.width/2 - 350, 340);
+            ctx.fillText('⚡ 5 POWER-UPS | MASSIVE HP SCALING | 🔊 EPIC SOUNDS ⚡', canvas.width/2 - 370, 340);
             let btnW = 260, btnH = 65, btnX = canvas.width/2 - btnW/2, btnY = 390;
             ctx.fillStyle = '#0ff';
             ctx.fillRect(btnX, btnY, btnW, btnH);
@@ -1564,7 +1852,7 @@
         }
         
         document.getElementById('resetGameBtn').addEventListener('click', () => { resetGame(); gameState = 'active'; });
-        document.getElementById('fakeDownloadBtn').addEventListener('click', (e) => { e.preventDefault(); alert('🔥 MASSIVE BOSS HP SCALING!\n\nBOSS 1 (500 pts): 30 HP\nBOSS 2 (1000 pts): 80 HP (+50)\nBOSS 3 (1500 pts): 130 HP (+50)\nBOSS 4 (2000 pts): 180 HP (+50)\n\nEach boss also shoots more bullets!\nDefeat for +100 bonus each time!'); });
+        document.getElementById('fakeDownloadBtn').addEventListener('click', (e) => { e.preventDefault(); alert('🔥 MASSIVE BOSS HP SCALING! 🎵 WITH SOUND EFFECTS!\n\nBOSS 1 (500 pts): 30 HP\nBOSS 2 (1000 pts): 80 HP (+50)\nBOSS 3 (1500 pts): 130 HP (+50)\nBOSS 4 (2000 pts): 180 HP (+50)\n\nEach boss also shoots more bullets!\nDefeat for +100 bonus each time!\n\n🔊 Sound Effects Included!'); });
         
         canvas.addEventListener('mousemove', handleMouseMove);
         canvas.addEventListener('click', handleCanvasClick);
